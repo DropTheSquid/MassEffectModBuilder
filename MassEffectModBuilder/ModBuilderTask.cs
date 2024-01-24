@@ -1,7 +1,7 @@
-﻿namespace AmmBuilder
+﻿namespace MassEffectModBuilder
 {
-    public abstract class ModBuilderTask
+    public interface ModBuilderTask
     {
-        public abstract Task RunModTask(ModBuilder modBuilder);
+        public void RunModTask(ModBuilderContext context);
     }
 }
