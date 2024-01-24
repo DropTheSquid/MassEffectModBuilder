@@ -4,7 +4,7 @@ using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
 
 namespace MassEffectModBuilder.MergeTasks
 {
-    public record class AddNewClass(string TargetFile, string PathToClassFile, string className, string TargetM3m) : ModBuilderTask
+    public record class AddNewClass(string TargetFile, string PathToClassFile, string ClassName, string TargetM3m) : ModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {
@@ -21,7 +21,7 @@ namespace MassEffectModBuilder.MergeTasks
             CreateMergeAssetFile(assetFilePath, context.Game);
 
             // Tell the builder I want this as a merge mod
-            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(className, className, Path.GetFileName(assetFilePath), true));
+            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(ClassName, ClassName, Path.GetFileName(assetFilePath), true));
         }
 
         private IMEPackage CreateMergeAssetFile(string stagingFilePath, MEGame game)

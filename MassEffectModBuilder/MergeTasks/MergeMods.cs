@@ -73,32 +73,142 @@ $@"        {{
                 }
             }
 
-            public abstract record class MergeModChange(string entryName)
+            public abstract record class MergeModChange(string EntryName)
             {
                 public abstract string GenerateChangeJson();
             }
 
-            public record class AssetUpdate(string vanillaEntryName, string newEntryName, string assetName, bool CanMergeAsNew = false) : MergeModChange(vanillaEntryName)
+            public record class AssetUpdate(
+                string VanillaEntryName,
+                string NewEntryName,
+                string AssetFileName,
+                bool CanMergeAsNew = false) : MergeModChange(VanillaEntryName)
             {
                 public override string GenerateChangeJson()
                 {
                     return
 $@"                {{
-                    ""entryname"": ""{vanillaEntryName}"",
+                    ""entryname"": ""{VanillaEntryName}"",
                     ""assetupdate"": {{
-                        ""assetname"":""{assetName}"",
-                        ""entryname"":""{newEntryName}"",
+                        ""assetname"":""{AssetFileName}"",
+                        ""entryname"":""{NewEntryName}"",
                         ""canmergeasnew"":{CanMergeAsNew.ToString().ToLower()}
                     }}
                 }}";
                 }
             }
 
-            // TODO other update types
-            // propertyUpdate (I will probably not use this much)
-            // scriptUpdate (will use this)
-            // addtoclassorreplace (will use this)
-        }
+            public record class ScriptUpdate(string EntryName, string ScriptFileName) : MergeModChange(EntryName)
+            {
+                public override string GenerateChangeJson()
+                {
+                    return
+$@"                {{
+                    ""entryname"": ""{EntryName}"",
+                    ""scriptupdate"": {{
+                        ""scriptfilename"":""{ScriptFileName}""
+                    }}
+                }}";
+                }
+            }
 
+            public record class AddToClassOrReplace(string EntryName, params string[] ScriptFilenames) : MergeModChange(EntryName)
+            {
+                public override string GenerateChangeJson()
+                {
+                    return
+$@"                {{
+                    ""entryname"": ""{EntryName}"",
+                    ""scriptupdate"": {{
+                        ""scriptfilenames"": [
+                            {string.Join(",/r/n                            ", ScriptFilenames.Select(x => $@"""{x}""")) }
+                        ]
+                    }}
+                }}";
+                }
+            }
+
+            public record class PropertyUpdates(string EntryName, params PropertyUpdateEntry[] Updates) : MergeModChange(EntryName)
+            {
+               
+                public override string GenerateChangeJson()
+                {
+                    return
+$@"                {{
+                    ""entryname"": ""{EntryName}"",
+                    ""scriptupdate"": {{
+                        ""scriptfilenames"": [
+                            {string.Join(",/r/n                            ", Updates.Select(x => x.GenerateJson()))}
+                        ]
+                    }}
+                }}";
+                }
+            }
+
+            public enum PropertyType
+            {
+                BoolProperty,
+                FloatProperty,
+                IntProperty,
+                Stringproperty,
+                NameProperty,
+                EnumProperty,
+                ObjectProperty,
+                Arrayproperty
+            }
+
+            public record class PropertyUpdateEntry(string PropertyName, PropertyType PropertyType, string Value)
+            {
+                public string GenerateJson()
+                {
+                    return
+$@"{{
+                            ""propertyname"": ""{PropertyName}"",
+                            ""propertytype"": ""{PropertyType}"",
+                            ""{(PropertyType == PropertyType.Arrayproperty ? "propertyasset" : "propertyvalue")}"": ""{Value}""
+                        }},";
+                }
+            }
+
+            //public record class BoolPropertyUpdate(string PropertyName, bool Value) : PropertyUpdateEntry(PropertyName, "BoolProperty")
+            //{
+            //   protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value.ToString())];
+            //}
+
+            //public record class FloatPropertyUpdate(string PropertyName, float Value) : PropertyUpdateEntry(PropertyName, "FloatProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value.ToString())];
+            //}
+
+            //public record class IntPropertyUpdate(string PropertyName, int Value) : PropertyUpdateEntry(PropertyName, "IntProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value.ToString())];
+            //}
+
+            //public record class StringPropertyUpdate(string PropertyName, string Value) : PropertyUpdateEntry(PropertyName, "StringProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value)];
+            //}
+
+            //public record class NamePropertyUpdate(string PropertyName, string Value, int Index = 0) : PropertyUpdateEntry(PropertyName, "NameProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value)];
+            //}
+
+            //public record class EnumPropertyUpdate(string PropertyName, string Value) : PropertyUpdateEntry(PropertyName, "EnumProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value)];
+            //}
+
+            //public record class ObjectPropertyUpdate(string PropertyName, string Value) : PropertyUpdateEntry(PropertyName, "ObjectProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyvalue", Value)];
+            //}
+
+            //public record class ArrayPropertyUpdate(string PropertyName, string ScriptFilename) : PropertyUpdateEntry(PropertyName, "ArrayProperty")
+            //{
+            //    protected override List<(string, string)> AdditionalProperties => [("propertyasset", ScriptFilename)];
+            //}
+        }
     }
 }
