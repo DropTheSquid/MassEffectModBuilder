@@ -1,4 +1,5 @@
-﻿using LegendaryExplorerCore.Packages;
+﻿using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Packages;
 using MassEffectModBuilder.LEXHelpers;
 using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
 
@@ -13,8 +14,20 @@ namespace MassEffectModBuilder.MergeTasks
             // as well as a json file for the merge mod
             // the rest can be done manually for now, but could be automated later
 
-
-            // TODO ensure the class does not already exist in the target file. This will likely break things if it does. 
+            if (!MELoadedFiles.TryGetHighestMountedFile(context.Game, TargetFile, out var targetFilePath))
+            {
+                throw new Exception($"cannot find target file {TargetFile}");
+            }
+            var targetPackage = MEPackageHandler.OpenMEPackage(targetFilePath);
+            var existingClass = targetPackage.FindExport(ClassName);
+            if (existingClass != null)
+            {
+                throw new Exception($"You are trying to compile the mergemods against a non vanilla basegame; class {ClassName} already exists in {TargetFile}");
+            }
+            if (!File.Exists(PathToClassFile))
+            {
+                throw new Exception($"script file {PathToClassFile} not found");
+            }
 
             // create the merge asset file
             var assetFilePath = Path.Combine(context.MergeModsFolder, Path.GetFileNameWithoutExtension(TargetFile) + "Classes.pcc");

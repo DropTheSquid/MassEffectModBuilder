@@ -7,7 +7,17 @@ namespace MassEffectModBuilder.MergeTasks
         public required PropertyUpdateEntry[] Updates { get; init; }
         public void RunModTask(ModBuilderContext context)
         {
-            // TODO ensure that any arrayproperty updates have the script files copied over
+            foreach (var entry in Updates)
+            {
+                if (entry.PropertyType == PropertyType.Arrayproperty)
+                {
+                    if (!File.Exists(entry.Value))
+                    {
+                        throw new Exception($"script file {entry.Value} not found");
+                    }
+                    File.Copy(entry.Value, Path.Combine(context.MergeModsFolder, Path.GetFileName(entry.Value)));
+                }
+            }
             context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new PropertyUpdates(EntryName, Updates));
         }
     }

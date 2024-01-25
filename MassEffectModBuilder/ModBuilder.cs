@@ -28,6 +28,7 @@ namespace MassEffectModBuilder
 
         public void Build()
         {
+            Console.WriteLine($"Starting mod build into {ModOutputPathBase}");
             // init the library
             LegendaryExplorerCoreLib.InitLib(TaskScheduler.Current, x => Console.Error.WriteLine($"Failed to save package: {x}"));
 

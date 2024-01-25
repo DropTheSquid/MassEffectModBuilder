@@ -1,1 +1,10 @@
 # MassEffectModBuilder
+
+What is this repo? In short, It is something I designed for myself, for my own mods, and which I thought might be useful to others who build similar mods. It can automate certain repetitive or difficult parts of building a mod, and provide the ability to track those changes in version control because they are text based. I focused on the parts that specifically impact the kinds of mods I make. Certain kinds of mods will not benefit much from this.
+
+So, specifically, this project aims to allow you to write and edit UnrealScript in plaintext, then compile it into the files that game expects for a mod. Any mod that is very code heavy may benefit from using this project.
+
+The advantages of storing code outside the games files are many: This allows you to track changes over time in Version control such as Git. It allows you to mark up and comment your code, and preserve it the way you originally wrote it, rather than relying on LEX's (very good) decompilation which can appear different and obscure intent. It allows you to refactor and rename things which are difficult or impossible to do within LEX due to the fact that it compiles one class at a time, and must be in a mostly valid state at the end of each compilation. It allows you to share and reuse code more easily. Due to the way Unreal Engine 3 cooks files, assets often need to be duplicated in multiple files. This allows you to have one master copy that gets automatically put where you need it.
+
+How does it work?
+You need to define a ModBuilder object which has a few settings like where you want it to write the output, the name of your DLC mod folder, etc. Then you build a pipeline of tasks for the builder to run. This is things like clearing the mod folder to regenerate everything, generating most of what you need for merge mods, copying files around, and, most importantly, compiling your UnrealScript source code into your mod's files. 

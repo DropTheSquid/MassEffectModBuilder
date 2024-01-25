@@ -6,7 +6,14 @@ namespace MassEffectModBuilder.MergeTasks
     {
         public void RunModTask(ModBuilderContext context)
         {
-            // TODO ensure the script files exist, copy them over
+            foreach (var scriptFile in ScriptFilenames)
+            {
+                if (!File.Exists(scriptFile))
+                {
+                    throw new Exception($"merge mod script {scriptFile} does not exist.");
+                }
+                File.Copy(scriptFile, Path.Combine(context.MergeModsFolder, Path.GetFileName(scriptFile)), true );
+            }
             context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AddToClassOrReplace(EntryName, ScriptFilenames));
         }
     }
