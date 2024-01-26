@@ -16,6 +16,8 @@ namespace MassEffectModBuilder
 
         public string StartupName => Builder.StartupName;
 
+        public int? ModuleNumber => Builder.ModuleNumber;
+
         public string ModTempFolder => Path.Combine(Builder.ModOutputPathBase, "ModBuilderStaging");
 
         public string DLCBaseFolder => Path.Combine(Builder.ModOutputPathBase, Builder.ModDLCName);

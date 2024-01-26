@@ -18,6 +18,11 @@ namespace MassEffectModBuilder
 
         public required string StartupName { get; init; }
 
+        /// <summary>
+        /// Only applicable to ME2/LE2, but required for some tasks for those games. Set during starter kit, stored in the mount file. 
+        /// </summary>
+        public int? ModuleNumber { get; init; }
+
         private readonly List<ModBuilderTask> ModBuilderTasks = [];
 
         public ModBuilder AddTask(ModBuilderTask task)

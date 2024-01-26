@@ -14,8 +14,11 @@ namespace MassEffectModBuilder.DLCTasks
                     break;
                 case MEGame.ME2:
                 case MEGame.LE2:
-                    // TODO this needs to be DLC_[ModuleNumber]_LOC.tlk
-                    context.TlkBuilder.OutputGame23Tlks(context.CookedPCConsoleFolder, context.ModDLCName);
+                    if (!context.ModuleNumber.HasValue)
+                    {
+                        throw new Exception("You must set the module number in order to generate ME2/LE2 tlks");
+                    }
+                    context.TlkBuilder.OutputGame23Tlks(context.CookedPCConsoleFolder, "DLC_" + context.ModuleNumber);
                     break;
                 case MEGame.ME3:
                 case MEGame.LE3:
