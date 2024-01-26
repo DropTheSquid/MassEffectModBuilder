@@ -3,15 +3,16 @@ using MassEffectModBuilder.LEXHelpers;
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public class AddClassesToStartup : ModBuilderTask
+    public class AddClassesToStartup(string RootClassFolder) : ModBuilderTask
     {
-        public required string RootClassFolder { get; init; }
         public void RunModTask(ModBuilderContext context)
         {
             var startup = context.GetStartupFile();
 
             var classesToCompile = LooseClassCompile.GetClassesFromDirectoryStructure(RootClassFolder);
             LooseClassCompile.CompileClasses(context.Game, classesToCompile, startup);
+
+            // TODO add all the classes to the object referencer...
 
             startup.Save();
         }

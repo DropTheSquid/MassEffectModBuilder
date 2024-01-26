@@ -11,8 +11,13 @@ namespace MassEffectModBuilder.MergeTasks
             {
                 throw new Exception($"asset file {AssetFileName} not found");
             }
-            File.Copy(AssetFileName, Path.Combine(context.MergeModsFolder, Path.GetFileName(AssetFileName)));
-            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(VanillaEntryName, NewEntryName, AssetFileName, CanMergeAsNew));
+            var destinationPath = Path.Combine(context.MergeModsFolder, Path.GetFileName(AssetFileName));
+            // if it is already in the destination folder, don't try to copy it over itself
+            if (destinationPath  != AssetFileName)
+            {
+                File.Copy(AssetFileName, destinationPath);
+            }
+            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(VanillaEntryName, NewEntryName, Path.GetFileName(AssetFileName), CanMergeAsNew));
         }
     }
 }

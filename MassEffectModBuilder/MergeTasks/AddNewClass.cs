@@ -7,6 +7,7 @@ namespace MassEffectModBuilder.MergeTasks
 {
     public record class AddNewClass(string TargetFile, string PathToClassFile, string ClassName, string TargetM3m) : ModBuilderTask
     {
+        public bool SkipMergeMod { get; set; } = false;
         public void RunModTask(ModBuilderContext context)
         {
             // this needs to generate a new pcc file containing the class compiled from source
@@ -33,8 +34,12 @@ namespace MassEffectModBuilder.MergeTasks
             var assetFilePath = Path.Combine(context.MergeModsFolder, Path.GetFileNameWithoutExtension(TargetFile) + "Classes.pcc");
             CreateMergeAssetFile(assetFilePath, context.Game);
 
-            // Tell the builder I want this as a merge mod
-            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(ClassName, ClassName, Path.GetFileName(assetFilePath), true));
+            // this can be useful if you want to make other programatic modifications to the file and don't need this particular merge mod. 
+            if (!SkipMergeMod)
+            {
+                // Tell the builder I want this as a merge mod
+                context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AssetUpdate(ClassName, ClassName, Path.GetFileName(assetFilePath), true));
+            }
         }
 
         private IMEPackage CreateMergeAssetFile(string stagingFilePath, MEGame game)

@@ -11,7 +11,7 @@ namespace MassEffectModBuilder.MergeTasks
                 throw new Exception($"script file {ScriptFileName} not found");
             }
             File.Copy(ScriptFileName, Path.Combine(context.MergeModsFolder, Path.GetFileName(ScriptFileName)));
-            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new ScriptUpdate(EntryName, ScriptFileName));
+            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new ScriptUpdate(EntryName, Path.GetFileName(ScriptFileName)));
         }
     }
 }
