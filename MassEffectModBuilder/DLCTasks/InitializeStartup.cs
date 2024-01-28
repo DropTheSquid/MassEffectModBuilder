@@ -1,4 +1,5 @@
 ﻿using LegendaryExplorerCore.Packages;
+using MassEffectModBuilder.LEXHelpers;
 
 namespace MassEffectModBuilder.DLCTasks
 {
@@ -8,7 +9,7 @@ namespace MassEffectModBuilder.DLCTasks
         {
             var startup = context.GetStartupFile();
 
-            ExportCreator.CreateExport(startup, "CombinedStartupReferencer", "ObjectReferencer", indexed: false);
+            startup.AddObjectReferencer("CombinedStartupReferencer", false);
 
             startup.Save();
         }
