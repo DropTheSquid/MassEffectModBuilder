@@ -39,44 +39,6 @@ namespace MassEffectModBuilder.LEXHelpers
             return results;
         }
 
-        //public void LoadInputData(string[] filePaths, bool debugVersion)
-        //{
-        //    var maleDict = new Dictionary<int, TLKStringRef>();
-        //    var femaleDict = new Dictionary<int, TLKStringRef>();
-        //    foreach (string fileName in filePaths)
-        //    {
-        //        _inputData.Clear();
-        //        var tempMaleDict = new Dictionary<int, TLKStringRef>();
-        //        var tempFemaleDict = new Dictionary<int, TLKStringRef>();
-        //        LoadXmlInputData(fileName, debugVersion);
-        //        foreach (TLKStringRef strRef in _inputData)
-        //        {
-        //            if (tempMaleDict.ContainsKey(strRef.CalculatedID))
-        //            {
-        //                tempFemaleDict[strRef.CalculatedID] = strRef;
-        //            }
-        //            else
-        //            {
-        //                tempMaleDict[strRef.CalculatedID] = strRef;
-        //            }
-        //        }
-
-        //        foreach ((int key, TLKStringRef value) in tempMaleDict)
-        //        {
-        //            maleDict[key] = value;
-        //        }
-        //        foreach ((int key, TLKStringRef value) in tempFemaleDict)
-        //        {
-        //            femaleDict[key] = value;
-        //        }
-        //    }
-
-        //    _inputData = maleDict.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value).ToList();
-        //    _inputData.AddRange(femaleDict.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Value));
-
-        //    PrepareHuffmanCoding();
-        //}
-
         public static List<TLKStringRef> ParseGame23TlkXml(string filePath)
         {
             // copied and slightly modified from LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression.LoadXmlInputData

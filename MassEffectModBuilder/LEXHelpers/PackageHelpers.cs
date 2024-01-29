@@ -6,11 +6,11 @@ namespace MassEffectModBuilder.LEXHelpers
 {
     public static class PackageHelpers
     {
-        public static ExportEntry GetObjectReferencer(this IMEPackage pcc)
+        public static ExportEntry? GetObjectReferencer(this IMEPackage pcc)
         {
             if (pcc.Flags.HasFlag(UnrealFlags.EPackageFlags.Map))
             {
-                throw new Exception("Can't add an object referencer to map file");
+                return null;
             }
 
             var objRef = pcc.Exports.FirstOrDefault(x => x.ClassName == "ObjectReferencer" && !x.IsDefaultObject);
@@ -23,12 +23,25 @@ namespace MassEffectModBuilder.LEXHelpers
 
         public static ExportEntry AddObjectReferencer(this IMEPackage pcc, string name = "ObjectReferencer", bool indexed = true)
         {
+            if (pcc.Flags.HasFlag(UnrealFlags.EPackageFlags.Map))
+            {
+                throw new Exception("Can't add an object referencer to map file");
+            }
+
             return ExportCreator.CreateExport(pcc, name, "ObjectReferencer", indexed: indexed);
         }
 
-        public static void AddToObjectReferencer(this IMEPackage pcc, params ExportEntry[] entries)
+        public static void AddToObjectReferencer(this ExportEntry referencer, params ExportEntry[] entries)
         {
-            var referencer = pcc.GetObjectReferencer();
+            AddToObjectReferencer(referencer, (IEnumerable<ExportEntry>)entries);
+        }
+
+        public static void AddToObjectReferencer(this ExportEntry referencer, IEnumerable<ExportEntry> entries)
+        {
+            if (referencer.ClassName != "ObjectReferencer")
+            {
+                throw new Exception($"You are trying to add referenced objects to a {referencer.ClassName}");
+            }
             var referenceProp = referencer.GetProperties()?.GetProp<ArrayProperty<ObjectProperty>>("ReferencedObjects");
             referenceProp ??= new ArrayProperty<ObjectProperty>("ReferencedObjects");
 

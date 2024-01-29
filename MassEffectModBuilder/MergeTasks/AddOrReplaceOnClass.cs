@@ -1,8 +1,8 @@
-﻿using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
+﻿using static MassEffectModBuilder.ContextHelpers.MergeMods.MergeMod;
 
 namespace MassEffectModBuilder.MergeTasks
 {
-    public record class AddOrReplaceOnClass(string TargetFile, string TargetM3m, string EntryName, params string[] ScriptFilenames) : ModBuilderTask
+    public record class AddOrReplaceOnClass(string TargetFile, string TargetM3m, string EntryName, params string[] ScriptFilenames) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {
@@ -14,7 +14,7 @@ namespace MassEffectModBuilder.MergeTasks
                 }
                 File.Copy(scriptFile, Path.Combine(context.MergeModsFolder, Path.GetFileName(scriptFile)), true );
             }
-            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AddToClassOrReplace(EntryName, ScriptFilenames));
+            context.MergeMods.AddMergeMod(TargetM3m, TargetFile, new AddToClassOrReplace(EntryName, ScriptFilenames.Select(x => Path.GetFileName(x)).ToArray()));
         }
     }
 }

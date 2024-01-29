@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public record class CompileGame3Config(string XmlFilePath) : ModBuilderTask
+    public record class CompileGame3Config(string XmlFilePath) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

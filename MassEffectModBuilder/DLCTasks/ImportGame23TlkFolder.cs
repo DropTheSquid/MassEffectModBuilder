@@ -2,7 +2,7 @@
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public record class ImportGame23TlkFolder(string XmlFolderPath) : ModBuilderTask
+    public record class ImportGame23TlkFolder(string XmlFolderPath) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

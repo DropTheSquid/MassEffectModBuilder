@@ -1,6 +1,6 @@
 ﻿namespace MassEffectModBuilder.MergeTasks
 {
-    public class GenerateMergeJson : ModBuilderTask
+    public class GenerateMergeJson : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

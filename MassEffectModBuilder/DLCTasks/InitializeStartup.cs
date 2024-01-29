@@ -3,7 +3,7 @@ using MassEffectModBuilder.LEXHelpers;
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public class InitializeStartup : ModBuilderTask
+    public class InitializeStartup : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

@@ -1,6 +1,5 @@
 ﻿using LegendaryExplorerCore.Packages;
-using MassEffectModBuilder.DLCTasks.Tlk;
-using MassEffectModBuilder.MergeTasks;
+using MassEffectModBuilder.ContextHelpers;
 
 namespace MassEffectModBuilder
 {
@@ -18,8 +17,6 @@ namespace MassEffectModBuilder
 
         public int? ModuleNumber => Builder.ModuleNumber;
 
-        public string ModTempFolder => Path.Combine(Builder.ModOutputPathBase, "ModBuilderStaging");
-
         public string DLCBaseFolder => Path.Combine(Builder.ModOutputPathBase, Builder.ModDLCName);
 
         public string CookedPCConsoleFolder => Path.Combine(DLCBaseFolder, "CookedPCConsole");
@@ -27,7 +24,6 @@ namespace MassEffectModBuilder
         public string MergeModsFolder => Path.Combine(ModOutputPathBase, "MergeMods");
 
         private MergeMods? _mergeMods;
-
         public MergeMods MergeMods
         {
             get
@@ -38,7 +34,6 @@ namespace MassEffectModBuilder
         }
 
         private TlkBuilder? _tlkBuilder;
-
         public TlkBuilder TlkBuilder
         {
             get
@@ -48,7 +43,6 @@ namespace MassEffectModBuilder
             }
         }
         
-
         private IMEPackage? _startupFile;
         public IMEPackage GetStartupFile()
         {

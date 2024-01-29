@@ -1,9 +1,9 @@
-﻿using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
+﻿using static MassEffectModBuilder.ContextHelpers.MergeMods.MergeMod;
 
 namespace MassEffectModBuilder.MergeTasks
 {
     // for all asset updates that are not adding a new class; ie replacing or adding new non class assets given a PCC
-    public record class UpdateAsset(string TargetFile, string TargetM3m, string VanillaEntryName, string NewEntryName, string AssetFileName, bool CanMergeAsNew = false) : ModBuilderTask
+    public record class UpdateAsset(string TargetFile, string TargetM3m, string VanillaEntryName, string NewEntryName, string AssetFileName, bool CanMergeAsNew = false) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

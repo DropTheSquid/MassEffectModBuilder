@@ -1,8 +1,8 @@
-﻿using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
+﻿using static MassEffectModBuilder.ContextHelpers.MergeMods.MergeMod;
 
 namespace MassEffectModBuilder.MergeTasks
 {
-    public record class UpdateFunction(string TargetFile, string TargetM3m, string EntryName, string ScriptFileName) : ModBuilderTask
+    public record class UpdateFunction(string TargetFile, string TargetM3m, string EntryName, string ScriptFileName) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

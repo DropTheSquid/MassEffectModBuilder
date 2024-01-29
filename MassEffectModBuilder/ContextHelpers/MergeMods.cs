@@ -1,6 +1,6 @@
-﻿using static MassEffectModBuilder.MergeTasks.MergeMods.MergeMod;
+﻿using static MassEffectModBuilder.ContextHelpers.MergeMods.MergeMod;
 
-namespace MassEffectModBuilder.MergeTasks
+namespace MassEffectModBuilder.ContextHelpers
 {
     public class MergeMods
     {
@@ -121,7 +121,7 @@ $@"                {{
                     ""entryname"": ""{EntryName}"",
                     ""scriptupdate"": {{
                         ""scriptfilenames"": [
-                            {string.Join(",/r/n                            ", ScriptFilenames.Select(x => $@"""{x}""")) }
+                            {string.Join(",/r/n                            ", ScriptFilenames.Select(x => $@"""{x}"""))}
                         ]
                     }}
                 }}";
@@ -130,7 +130,7 @@ $@"                {{
 
             public record class PropertyUpdates(string EntryName, params PropertyUpdateEntry[] Updates) : MergeModChange(EntryName)
             {
-               
+
                 public override string GenerateChangeJson()
                 {
                     return

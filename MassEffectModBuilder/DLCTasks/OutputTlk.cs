@@ -2,7 +2,7 @@
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public class OutputTlk : ModBuilderTask
+    public class OutputTlk : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

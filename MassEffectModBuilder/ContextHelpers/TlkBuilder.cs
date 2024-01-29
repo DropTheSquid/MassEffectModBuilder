@@ -5,7 +5,7 @@ using Game1Huffman = LegendaryExplorerCore.TLK.ME1.HuffmanCompression;
 using Game23Huffman = LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression;
 
 
-namespace MassEffectModBuilder.DLCTasks.Tlk
+namespace MassEffectModBuilder.ContextHelpers
 {
     public record class TlkBuilder(MEGame Game)
     {
@@ -20,7 +20,7 @@ namespace MassEffectModBuilder.DLCTasks.Tlk
         }
 
         public void ImportME2ME3Xml(string xmlPath, MELocalization locale)
-        { 
+        {
             var maleDict = new Dictionary<int, TLKStringRef>();
             var femaleDict = new Dictionary<int, TLKStringRef>();
             var stringRefs = TlkHelpers.ParseGame23TlkXml(xmlPath);
@@ -56,7 +56,7 @@ namespace MassEffectModBuilder.DLCTasks.Tlk
                 stringRefs.Add(id, stringRef);
             }
             stringRef.AddLocalization(locale, data, female);
-            
+
         }
 
         public void OutputGame1Tlks(string outputFolder, string fileNameBase)

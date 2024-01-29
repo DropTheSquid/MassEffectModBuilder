@@ -1,6 +1,6 @@
 ﻿namespace MassEffectModBuilder
 {
-    public interface ModBuilderTask
+    public interface IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context);
     }

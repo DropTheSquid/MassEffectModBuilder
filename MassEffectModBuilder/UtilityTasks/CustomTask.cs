@@ -1,6 +1,6 @@
 ﻿namespace MassEffectModBuilder.UtilityTasks
 {
-    public record class CustomTask(Action<ModBuilderContext> CustomTaskAction) : ModBuilderTask
+    public record class CustomTask(Action<ModBuilderContext> CustomTaskAction) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

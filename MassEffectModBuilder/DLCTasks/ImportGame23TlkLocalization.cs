@@ -2,7 +2,7 @@
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public record class ImportGame23TlkLocaliazation(MELocalization Localization, string XmlPath) : ModBuilderTask
+    public record class ImportGame23TlkLocaliazation(MELocalization Localization, string XmlPath) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

@@ -23,9 +23,9 @@ namespace MassEffectModBuilder
         /// </summary>
         public int? ModuleNumber { get; init; }
 
-        private readonly List<ModBuilderTask> ModBuilderTasks = [];
+        private readonly List<IModBuilderTask> ModBuilderTasks = [];
 
-        public ModBuilder AddTask(ModBuilderTask task)
+        public ModBuilder AddTask(IModBuilderTask task)
         {
             ModBuilderTasks.Add(task);
             return this;
@@ -43,6 +43,8 @@ namespace MassEffectModBuilder
             {
                 task.RunModTask(context);
             }
+
+            // TODO run tlk output, merge mod output just in case there is anything there?
         }
     }
 }

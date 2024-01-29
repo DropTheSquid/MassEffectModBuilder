@@ -1,17 +1,23 @@
 ﻿namespace MassEffectModBuilder.UtilityTasks
 {
-    public record class CopyFiles(string SourceDirectory, Func<ModBuilderContext, string> DestinationDirectoryFunc) : ModBuilderTask
+    public record class CopyFiles(string SourceDirectory, Func<ModBuilderContext, string> DestinationDirectoryFunc) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {
             var destinationDirectory = DestinationDirectoryFunc(context);
             if (!Directory.Exists(SourceDirectory))
             {
-                throw new Exception($"source directory {SourceDirectory} not found");
+                Console.WriteLine($"warning: you attempted to copy files out of {SourceDirectory} but it was not found; is it empty and therefore skipped by the build copy?");
+                return;
             }
             foreach (var file in Directory.EnumerateFiles(SourceDirectory))
             {
-                File.Copy(file, Path.Combine(destinationDirectory, Path.GetFileName(file)));
+                var dest = Path.Combine(destinationDirectory, Path.GetFileName(file));
+                if (File.Exists(dest))
+                {
+                    File.Delete(dest);
+                }
+                File.Copy(file, dest);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace MassEffectModBuilder.UtilityTasks
 {
-    public class CleanMergeModDirectory : ModBuilderTask
+    public class CleanMergeModDirectory : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {
