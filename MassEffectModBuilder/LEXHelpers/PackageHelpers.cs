@@ -1,4 +1,6 @@
-﻿using LegendaryExplorerCore.Packages;
+﻿using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 
@@ -45,11 +47,50 @@ namespace MassEffectModBuilder.LEXHelpers
             var referenceProp = referencer.GetProperties()?.GetProp<ArrayProperty<ObjectProperty>>("ReferencedObjects");
             referenceProp ??= new ArrayProperty<ObjectProperty>("ReferencedObjects");
 
-            foreach (var entry in entries )
+            foreach (var entry in entries)
             {
                 referenceProp.Add(new ObjectProperty(entry));
                 referencer.WriteProperty(referenceProp);
             }
+        }
+
+        public static bool TryGetHighestMountedOfficialFile(string desiredPackageName, MEGame game, out string resultPath)
+        {
+            string? gameRootOverride = null;
+
+            var loadedFiles = new CaseInsensitiveDictionary<string>();
+            string FauxStartupPath = Path.Combine("DLC_METR_Patch01", "CookedPCConsole", "Startup.pcc");
+
+            var bgPath = MEDirectories.GetBioGamePath(game, gameRootOverride);
+            if (bgPath != null)
+            {
+                IEnumerable<string> directories;
+                if (game is MEGame.UDK)
+                {
+                    directories = new[] { UDKDirectory.GetScriptPath(gameRootOverride), bgPath };
+                }
+                else
+                {
+                    directories = MELoadedDLC.GetEnabledDLCFolders(game, gameRootOverride)
+                        .Where(dir => MELoadedDLC.IsOfficialDLC(dir, game))
+                        .OrderBy(dir => MELoadedDLC.GetMountPriority(dir, game))
+                        .Prepend(bgPath);
+                }
+                foreach (string directory in directories)
+                {
+                    foreach (string filePath in MELoadedFiles.GetCookedFiles(game, directory))
+                    {
+                        string fileName = Path.GetFileName(filePath);
+                        if (game == MEGame.LE3 && filePath.EndsWith(FauxStartupPath, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            continue; // This file is not used by game and will break lots of stuff if we don't filter it out. This is a bug in how LE3 was cooked
+                        }
+                        if (fileName != null) loadedFiles[fileName] = filePath;
+                    }
+                }
+            }
+
+            return loadedFiles.TryGetValue(desiredPackageName, out resultPath);
         }
     }
 }

@@ -14,9 +14,13 @@ namespace MassEffectModBuilder.DLCTasks
 
             var mergeAssetFile = MEPackageHandler.OpenMEPackages([assetFilePath]).Single();
 
-            // creates a properly formed import under which to put the basegame classes
-            var newExport = ExportCreator.CreatePackageExport(file, Path.GetFileNameWithoutExtension(basegameTargetFile));
-            var basegameImport = EntryImporter.ConvertExportToImport(newExport);
+            ImportEntry basegameImport = file.FindImport(Path.GetFileNameWithoutExtension(basegameTargetFile));
+            if (basegameImport == null)
+            {
+                // creates a properly formed import under which to put the basegame classes
+                var newExport = ExportCreator.CreatePackageExport(file, Path.GetFileNameWithoutExtension(basegameTargetFile));
+                basegameImport = EntryImporter.ConvertExportToImport(newExport);
+            }
 
             var classToPort = mergeAssetFile.FindExport(className);
             EntryExporter.ExportExportToPackage(classToPort, file, out var portedClass);

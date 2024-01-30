@@ -11,6 +11,8 @@ namespace MassEffectModBuilder.DLCTasks
     /// <param name="Classes">the list of classes to be added to the file</param>
     public class AddClassesToFile(Func<ModBuilderContext, IMEPackage> getFileFunc, IEnumerable<ClassToCompile> Classes) : IModBuilderTask
     {
+        public AddClassesToFile(Func<ModBuilderContext, IMEPackage> getFileFunc, params ClassToCompile[] Classes)
+            : this(getFileFunc, (IEnumerable<ClassToCompile>)Classes) { }
         public void RunModTask(ModBuilderContext context)
         {
             var file = getFileFunc(context);

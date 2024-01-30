@@ -119,7 +119,7 @@ $@"                {{
                     return
 $@"                {{
                     ""entryname"": ""{EntryName}"",
-                    ""scriptupdate"": {{
+                    ""addtoclassorreplace"": {{
                         ""scriptfilenames"": [
                             {string.Join(",/r/n                            ", ScriptFilenames.Select(x => $@"""{x}"""))}
                         ]
@@ -136,7 +136,7 @@ $@"                {{
                     return
 $@"                {{
                     ""entryname"": ""{EntryName}"",
-                    ""scriptupdate"": {{
+                    ""propertyupdates"": {{
                         ""scriptfilenames"": [
                             {string.Join(",/r/n                            ", Updates.Select(x => x.GenerateJson()))}
                         ]
