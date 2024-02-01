@@ -9,6 +9,8 @@ namespace MassEffectModBuilder.ContextHelpers
 {
     public record class TlkBuilder(MEGame Game)
     {
+        public static bool WarnOnMissingLocalization = false;
+
         private readonly Dictionary<int, StringRefBuilder> stringRefs = [];
         public void ImportME1Xml(string xmlPath, MELocalization locale, bool female)
         {
@@ -168,7 +170,7 @@ namespace MassEffectModBuilder.ContextHelpers
             var (maleData, femaleData) = GetLocalizedOrFallback(locale);
             if (maleData == null)
             {
-                throw new Exception($"You have set up your tlks wrong. There is no male version for strinref {Id} in localization {locale}");
+                throw new Exception($"You have set up your tlks wrong. There is no male version for stringref {Id} in localization {locale}");
             }
             return female && femaleData != null ? femaleData : maleData;
         }
@@ -181,7 +183,10 @@ namespace MassEffectModBuilder.ContextHelpers
                 {
                     return nonIntData;
                 }
-                Console.WriteLine($"Warning: you asked for the {locale} version of stringref {Id} but there is no localization; falling back to English");
+                if (TlkBuilder.WarnOnMissingLocalization)
+                {
+                    Console.WriteLine($"Warning: you asked for the {locale} version of stringref {Id} but there is no localization; falling back to English");
+                }
                 // fall back to int if there is no specific localization
                 locale = MELocalization.INT;
             }
