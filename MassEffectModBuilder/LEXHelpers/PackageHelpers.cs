@@ -1,7 +1,6 @@
 ﻿using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
-using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 
 namespace MassEffectModBuilder.LEXHelpers
@@ -15,7 +14,17 @@ namespace MassEffectModBuilder.LEXHelpers
                 return null;
             }
 
-            var objRef = pcc.Exports.FirstOrDefault(x => x.ClassName == "ObjectReferencer" && !x.IsDefaultObject);
+            return pcc.Exports.FirstOrDefault(x => x.ClassName == "ObjectReferencer" && !x.IsDefaultObject);
+        }
+
+        public static ExportEntry GetOrCreateObjectReferencer(this IMEPackage pcc)
+        {
+            if (pcc.Flags.HasFlag(UnrealFlags.EPackageFlags.Map))
+            {
+                throw new Exception("You cannot have an object referencer in a map file");
+            }
+
+            var objRef = pcc.GetObjectReferencer();
             if (objRef == null)
             {
                 return pcc.AddObjectReferencer();
@@ -52,6 +61,22 @@ namespace MassEffectModBuilder.LEXHelpers
                 referenceProp.Add(new ObjectProperty(entry));
                 referencer.WriteProperty(referenceProp);
             }
+        }
+
+        public static IEnumerable<IEntry> GetReferencedEntries(this ExportEntry objectReferencer)
+        {
+            if (objectReferencer == null || objectReferencer.ClassName != "ObjectReferencer")
+            {
+                return [];
+            }
+
+            var referenceProp = objectReferencer.GetProperties()?.GetProp<ArrayProperty<ObjectProperty>>("ReferencedObjects");
+            if (referenceProp == null)
+            {
+                return [];
+            }
+
+            return referenceProp.Select(x => x.ResolveToEntry(objectReferencer.FileRef));
         }
 
         public static bool TryGetHighestMountedOfficialFile(string desiredPackageName, MEGame game, out string resultPath)
