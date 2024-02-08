@@ -2,6 +2,7 @@
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using System.Xml.Linq;
 
 namespace MassEffectModBuilder.LEXHelpers
 {
@@ -116,6 +117,28 @@ namespace MassEffectModBuilder.LEXHelpers
             }
 
             return loadedFiles.TryGetValue(desiredPackageName, out resultPath);
+        }
+
+        public static IEntry? FindClass(this IMEPackage pcc, string className)
+        {
+            foreach (ExportEntry exp in pcc.Exports)
+            {
+                //find header references
+                if (exp.ObjectName.Name == className && exp.ClassName == "Class")
+                {
+                    return exp;
+                }
+            }
+
+            foreach (ImportEntry import in pcc.Imports)
+            {
+                if (import.ClassName == className)
+                {
+                    return import;
+                }
+            }
+
+            return null;
         }
     }
 }

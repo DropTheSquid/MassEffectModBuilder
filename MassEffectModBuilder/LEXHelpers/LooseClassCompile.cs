@@ -15,7 +15,36 @@ namespace MassEffectModBuilder.LEXHelpers
         {
             IEnumerable<UnrealScriptCompiler.LooseClassPackageEx> internalClasses = [];
 
-            internalClasses = classes
+            var deduplicatedClasses = classes.GroupBy(x => x.ClassName).Select(x =>
+            {
+                if (x.Count() > 1)
+                {
+                    // this shouldn't happen, but there are two levels of bad; 
+                    var first = x.First();
+                    var (_, source, _) = first;
+                    var ifp = first.InstancedFullPath;
+                    if (x.All(y => y.InstancedFullPath == ifp && y.SourceCode == source))
+                    {
+                        // if they are truly duplicates, just log a warning and move on
+                        Console.WriteLine($"Warning: you are trying to compile {x.Count()} copies of {ifp}; deduplicating, but you have a mistake in your code somewhere");
+                    }
+                    else
+                    {
+                        // if there are two classes at different paths or with different code, that is a show stopper. You made a bad mistake.
+                        throw new Exception($"You are trying to compile multiple classes called {x.First().ClassName} at different paths or with different code.");
+                    }
+                }
+
+                // check that a class with this name does not already exist. reject if it does. loose class compiler is not set up to handle this case. 
+                if (package.FindClass(x.Key) != null)
+                {
+                    throw new Exception($"package already contains class {x.Key}");
+                }
+
+                return x.First();
+            });
+
+            internalClasses = deduplicatedClasses
                 .GroupBy(x => x.PackagePath ?? [])
                 .Select(x => new UnrealScriptCompiler.LooseClassPackageEx(x.Key, x.Select(y => new UnrealScriptCompiler.LooseClass(y.ClassName, y.SourceCode)).ToList()));
 
@@ -42,7 +71,7 @@ namespace MassEffectModBuilder.LEXHelpers
                 Console.Error.WriteLine($"could not compile loose classes to target file {pcc.FileNameNoExtension}");
                 foreach (var err in messages.AllErrors)
                 {
-                    Console.Error.WriteLine(err.Message);
+                    Console.Error.WriteLine(err);
                 }
                 throw new Exception($"could not compile loose classes to target file {pcc.FileNameNoExtension}");
             }
