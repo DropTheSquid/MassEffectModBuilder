@@ -75,6 +75,10 @@ namespace MassEffectModBuilder.LEXHelpers
                 }
                 throw new Exception($"could not compile loose classes to target file {pcc.FileNameNoExtension}");
             }
+            foreach (var warning in messages.AllWarnings)
+            {
+                Console.WriteLine(warning);
+            }
         }
 
         public static IEnumerable<ClassToCompile> GetClassesFromDirectories(params string[] classRootFolders)
