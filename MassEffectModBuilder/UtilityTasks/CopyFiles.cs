@@ -10,9 +10,21 @@
                 Console.WriteLine($"warning: you attempted to copy files out of {SourceDirectory} but it was not found; is it empty and therefore skipped by the build copy?");
                 return;
             }
-            foreach (var file in Directory.EnumerateFiles(SourceDirectory))
+            foreach (var file in Directory.EnumerateFiles(SourceDirectory, "*", SearchOption.AllDirectories))
             {
-                var dest = Path.Combine(destinationDirectory, Path.GetFileName(file));
+                var relativePath = Path.GetRelativePath(SourceDirectory, file);
+                var pathSegments = relativePath.Split(Path.DirectorySeparatorChar).SkipLast(1);
+                string pathSoFar = destinationDirectory;
+                foreach (var dir in pathSegments)
+                {
+                    var dirPath = Path.Combine(pathSoFar, dir);
+                    if (!Directory.Exists(dirPath))
+                    {
+                        Directory.CreateDirectory(dirPath);
+                    }
+                    pathSoFar = Path.Combine(pathSoFar, dir);
+                }
+                var dest = Path.Combine(destinationDirectory, relativePath);
                 if (File.Exists(dest))
                 {
                     File.Delete(dest);
