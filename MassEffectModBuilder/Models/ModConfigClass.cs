@@ -69,5 +69,10 @@ namespace MassEffectModBuilder.Models
                 AddEntry(new CoalesceProperty(name, new CoalesceValue(value, CoalesceParseAction.AddUnique)));
             }
         }
+
+        public void AddArrayEntries(string name, IEnumerable<string> values)
+        {
+            AddArrayEntries(name, values.ToArray());
+        }
     }
 }
