@@ -2,7 +2,7 @@
 
 namespace MassEffectModBuilder.Models
 {
-    public class ModConfigClass(string classFullPath, string? targetConfigFile = null) 
+    public class ModConfigClass(string classFullPath, string? targetConfigFile = null)
         : CoalesceSection(string.IsNullOrEmpty(targetConfigFile) ? classFullPath : $"{targetConfigFile} {classFullPath}")
     {
         public string ClassFullPath { get; set; } = classFullPath;
@@ -30,12 +30,17 @@ namespace MassEffectModBuilder.Models
             }
         }
 
-        public void Add(CoalesceProperty property)
+        protected void Add(CoalesceProperty property)
         {
             Add(property.Name, property);
         }
 
-        public void AddRange(params CoalesceProperty[] props)
+        protected void AddRange(params CoalesceProperty[] props)
+        {
+            AddRange((IEnumerable<CoalesceProperty>)props);
+        }
+
+        protected void AddRange(IEnumerable<CoalesceProperty> props)
         {
             foreach (var prop in props)
             {
@@ -43,36 +48,67 @@ namespace MassEffectModBuilder.Models
             }
         }
 
-        public void AddRange(IEnumerable<CoalesceProperty> props)
+        public string? getSingleValue(string propertyName)
         {
-            foreach (var prop in props)
+            if (TryGetValue(propertyName, out var value))
             {
-                Add(prop);
+                if (value.Count > 1)
+                {
+                    throw new Exception($"you are trying to get a single property {propertyName} but it is an array");
+                }
+                if (value.Count == 1 && value[0].ValueType == 2)
+                {
+                    return value[0].Value;
+                }
+            }
+            return null;
+        }
+
+        public string? GetStringValue(string propertyName)
+        {
+            return getSingleValue(propertyName);
+        }
+
+        public void SetStringValue(string propertyName, string? value)
+        {
+            Remove(propertyName);
+            if (value != null)
+            {
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value, CoalesceParseAction.Add)));
             }
         }
 
-        public void SetValue(string name, string value)
+        public int? GetIntValue(string propertyName)
         {
-            Remove(name);
-            Add(new CoalesceProperty(name, new CoalesceValue(value, CoalesceParseAction.Add)));
+            var rawValue = getSingleValue(propertyName);
+            if (rawValue != null)
+            {
+                if (int.TryParse(rawValue, out var value))
+                {
+                    return value;
+                }
+                throw new Exception($"property {propertyName} with value {rawValue} is not an int");
+            }
+            return null;
         }
 
-        public void SetValue(string name, int value)
+        public void SetIntValue(string name, int? value)
         {
-            SetValue(name, value.ToString());
+            SetStringValue(name, value?.ToString());
         }
 
         public void AddArrayEntries(string name, params string[] values)
+        {
+            AddArrayEntries(name, (IEnumerable<string>)values);
+        }
+
+        public void AddArrayEntries(string name, IEnumerable<string> values)
         {
             foreach (var value in values)
             {
                 AddEntry(new CoalesceProperty(name, new CoalesceValue(value, CoalesceParseAction.AddUnique)));
             }
-        }
-
-        public void AddArrayEntries(string name, IEnumerable<string> values)
-        {
-            AddArrayEntries(name, values.ToArray());
+            
         }
     }
 }
