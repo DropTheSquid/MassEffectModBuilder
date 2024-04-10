@@ -14,7 +14,7 @@ namespace MassEffectModBuilder
 
         public string ModDLCName => Builder.ModDLCName;
 
-        public string StartupName => Builder.StartupName;
+        public string? StartupName => Builder.StartupName;
 
         public int? ModuleNumber => Builder.ModuleNumber;
 
@@ -45,8 +45,12 @@ namespace MassEffectModBuilder
         }
         
         private IMEPackage? _startupFile;
-        public IMEPackage GetStartupFile()
+        public IMEPackage? GetStartupFile()
         {
+            if (Builder.StartupName == null)
+            {
+                return null;
+            }
             _startupFile ??= MEPackageHandler.CreateAndOpenPackage(Path.Combine(Builder.ModOutputPathBase, Builder.ModDLCName, "CookedPCConsole", Builder.StartupName), Builder.Game);
             return _startupFile;
         }
