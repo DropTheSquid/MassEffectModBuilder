@@ -93,4 +93,9 @@ namespace MassEffectModBuilder
             return newFile;
         }
     }
+
+    public class ModBuilderCustomContext<T>(ModBuilder builder, T customContext) : ModBuilderContext(builder) where T : class
+    {
+        public T CustomContext { get; set; } = customContext;
+    }
 }
