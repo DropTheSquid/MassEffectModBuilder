@@ -16,7 +16,7 @@ namespace MassEffectModBuilder
         /// </summary>
         public required string ModDLCName { get; init; }
 
-        public required string StartupName { get; init; }
+        public string? StartupName { get; init; } = null;
 
         /// <summary>
         /// Only applicable to ME2/LE2, but required for some tasks for those games. Set during starter kit, stored in the mount file. 
