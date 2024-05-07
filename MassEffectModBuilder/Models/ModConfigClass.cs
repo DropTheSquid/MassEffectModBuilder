@@ -48,7 +48,7 @@ namespace MassEffectModBuilder.Models
             }
         }
 
-        public string? getSingleValue(string propertyName)
+        public string? GetSingleValue(string propertyName)
         {
             if (TryGetValue(propertyName, out var value))
             {
@@ -66,7 +66,7 @@ namespace MassEffectModBuilder.Models
 
         public string? GetStringValue(string propertyName)
         {
-            return getSingleValue(propertyName);
+            return GetSingleValue(propertyName);
         }
 
         public void SetStringValue(string propertyName, string? value)
@@ -80,7 +80,7 @@ namespace MassEffectModBuilder.Models
 
         public int? GetIntValue(string propertyName)
         {
-            var rawValue = getSingleValue(propertyName);
+            var rawValue = GetSingleValue(propertyName);
             if (rawValue != null)
             {
                 if (int.TryParse(rawValue, out var value))
@@ -93,6 +93,25 @@ namespace MassEffectModBuilder.Models
         }
 
         public void SetIntValue(string name, int? value)
+        {
+            SetStringValue(name, value?.ToString());
+        }
+
+        public bool? GetBoolValue(string propertyName)
+        {
+            var rawValue = GetSingleValue(propertyName);
+            if (rawValue != null)
+            {
+                if (bool.TryParse(rawValue, out var value))
+                {
+                    return value;
+                }
+                throw new Exception($"property {propertyName} with value {rawValue} is not a bool");
+            }
+            return null;
+        }
+
+        public void SetBoolValue(string name, bool? value)
         {
             SetStringValue(name, value?.ToString());
         }
