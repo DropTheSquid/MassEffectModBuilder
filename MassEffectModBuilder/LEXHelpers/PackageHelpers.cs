@@ -80,10 +80,8 @@ namespace MassEffectModBuilder.LEXHelpers
             return referenceProp.Select(x => x.ResolveToEntry(objectReferencer.FileRef));
         }
 
-        public static bool TryGetHighestMountedOfficialFile(string desiredPackageName, MEGame game, out string resultPath)
+        public static bool TryGetHighestMountedOfficialFile(string desiredPackageName, MEGame game, out string resultPath, string? gameRootOverride = null)
         {
-            string? gameRootOverride = null;
-
             var loadedFiles = new CaseInsensitiveDictionary<string>();
             string FauxStartupPath = Path.Combine("DLC_METR_Patch01", "CookedPCConsole", "Startup.pcc");
 

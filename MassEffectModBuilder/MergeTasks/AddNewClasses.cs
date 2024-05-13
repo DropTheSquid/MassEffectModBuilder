@@ -1,5 +1,6 @@
-﻿using LegendaryExplorerCore.GameFilesystem;
+﻿using LegendaryExplorerCore.Misc.ME3Tweaks;
 using LegendaryExplorerCore.Packages;
+using MassEffectModBuilder.LEXHelpers;
 using static MassEffectModBuilder.ContextHelpers.MergeMods.MergeMod;
 using static MassEffectModBuilder.LEXHelpers.LooseClassCompile;
 
@@ -13,8 +14,9 @@ namespace MassEffectModBuilder.MergeTasks
         public bool SkipMergeMod { get; set; } = false;
         public void RunModTask(ModBuilderContext context)
         {
+            var backupPath = ME3TweaksBackups.GetGameBackupPath(context.Game);
             // TODO check that we are actually allowed to merge mod this file
-            if (!MELoadedFiles.TryGetHighestMountedFile(context.Game, TargetFile, out var targetFilePath))
+            if (!PackageHelpers.TryGetHighestMountedOfficialFile(TargetFile, context.Game, out var targetFilePath, backupPath))
             {
                 throw new Exception($"cannot find target file {TargetFile}");
             }
@@ -40,7 +42,7 @@ namespace MassEffectModBuilder.MergeTasks
 
             using IMEPackage mergePackage = MEPackageHandler.CreateAndOpenPackage(assetFilePath, context.Game);
 
-            CompileClasses(Classes, mergePackage);
+            CompileClasses(Classes, mergePackage, backupPath);
 
             mergePackage.Save();
         }

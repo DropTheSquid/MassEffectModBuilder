@@ -11,7 +11,7 @@ namespace MassEffectModBuilder.LEXHelpers
             public readonly string InstancedFullPath => string.Join(".", [.. PackagePath ?? [], ClassName]);
         }
 
-        public static void CompileClasses(IEnumerable<ClassToCompile> classes, IMEPackage package)
+        public static void CompileClasses(IEnumerable<ClassToCompile> classes, IMEPackage package, string? overrideGameRoot = null)
         {
             IEnumerable<UnrealScriptCompiler.LooseClassPackageEx> internalClasses = [];
 
@@ -48,10 +48,10 @@ namespace MassEffectModBuilder.LEXHelpers
                 .GroupBy(x => x.PackagePath ?? [])
                 .Select(x => new UnrealScriptCompiler.LooseClassPackageEx(x.Key, x.Select(y => new UnrealScriptCompiler.LooseClass(y.ClassName, y.SourceCode)).ToList()));
 
-            CompileClassesInternal(internalClasses.ToList(), package);
+            CompileClassesInternal(internalClasses.ToList(), package, overrideGameRoot);
         }
 
-        private static void CompileClassesInternal(List<UnrealScriptCompiler.LooseClassPackageEx> classesToCompile, IMEPackage pcc)
+        private static void CompileClassesInternal(List<UnrealScriptCompiler.LooseClassPackageEx> classesToCompile, IMEPackage pcc, string? overrideGameRoot)
         {
             // copied from SirC's LEX experiments for loose class compile
             static IEntry MissingObjectResolver(IMEPackage pcc, string instancedPath)
@@ -64,7 +64,7 @@ namespace MassEffectModBuilder.LEXHelpers
                 return export;
             }
 
-            var messages = UnrealScriptCompiler.CompileLooseClassesEx(pcc, classesToCompile, MissingObjectResolver);
+            var messages = UnrealScriptCompiler.CompileLooseClassesEx(pcc, classesToCompile, MissingObjectResolver, gameRootPath: overrideGameRoot);
 
             if (messages.HasErrors)
             {
