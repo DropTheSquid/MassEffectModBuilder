@@ -4,10 +4,18 @@
     {
         public void RunModTask(ModBuilderContext context)
         {
-            if (Directory.Exists(context.DLCBaseFolder))
+            // delete all files in the root output directory
+            foreach (var file in Directory.EnumerateFiles(context.ModOutputPathBase))
             {
-                Directory.Delete(context.DLCBaseFolder, true);
+                File.Delete(file);
             }
+            // delete all folders (except mergemods)
+            foreach (var dir in Directory.EnumerateDirectories(context.ModOutputPathBase))
+            {
+                if (dir == context.MergeModsFolder) { continue; }
+                Directory.Delete(dir, true);
+            }
+            // create some directories it expects to be there
             Directory.CreateDirectory(context.DLCBaseFolder);
             Directory.CreateDirectory(context.CookedPCConsoleFolder);
         }
