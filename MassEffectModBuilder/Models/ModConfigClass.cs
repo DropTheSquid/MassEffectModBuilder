@@ -78,6 +78,24 @@ namespace MassEffectModBuilder.Models
             }
         }
 
+        public TEnum? GetEnumValue<TEnum>(string propertyName) where TEnum : struct
+        {
+            if (Enum.TryParse(GetStringValue(propertyName), out TEnum value))
+            {
+                return value;
+            }
+            return null;
+        }
+
+        public void SetEnumValue<TEnum>(string propertyName, TEnum? value) where TEnum : struct
+        {
+            Remove(propertyName);
+            if (value != null)
+            {
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.ToString(), CoalesceParseAction.Add)));
+            }
+        }
+
         public int? GetIntValue(string propertyName)
         {
             var rawValue = GetSingleValue(propertyName);
