@@ -134,6 +134,15 @@ namespace MassEffectModBuilder.Models
             SetStringValue(name, value?.ToString());
         }
 
+        public void SetStructValue(string propertyName, StructCoalesceValue? value)
+        {
+            Remove(propertyName);
+            if (value != null)
+            {
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.OutputValue(), CoalesceParseAction.Add)));
+            }
+        }
+
         public void AddArrayEntries(string name, params string[] values)
         {
             AddArrayEntries(name, (IEnumerable<string>)values);
@@ -145,7 +154,6 @@ namespace MassEffectModBuilder.Models
             {
                 AddEntry(new CoalesceProperty(name, new CoalesceValue(value, CoalesceParseAction.AddUnique)));
             }
-            
         }
     }
 }
