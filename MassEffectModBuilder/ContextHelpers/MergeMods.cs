@@ -145,6 +145,21 @@ $@"                {{
                 }
             }
 
+            // MM9+ only
+            public record class ClassUpdate(string ClassName) : MergeModChange(ClassName)
+            {
+                public override string GenerateChangeJson()
+                {
+                    return
+$@"                {{
+                   ""entryname"": ""{EntryName}"",
+                   ""classupdate"": {{
+                       ""assetname"":""{ClassName}.uc""
+                   }}
+                }}";
+                }
+            }
+
             public enum PropertyType
             {
                 BoolProperty,
