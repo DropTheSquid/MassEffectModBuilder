@@ -2,42 +2,49 @@
 
 namespace MassEffectModBuilder.Models
 {
-    public interface ICoalesceValue
+    public interface ModBuilderCoalesceValue
     {
         string OutputValue();
+        string? Comment { get; }
 
-        CoalesceValue ToCoalesceValue(CoalesceParseAction type)
+        CoalesceParseAction Action { get; }
+
+        CoalesceValue ToCoalesceValue()
         {
-            return new CoalesceValue(OutputValue(), type);
+            return new CoalesceValue(OutputValue(), Action) { Comment = Comment };
         }
     }
 
-    public record class IntCoalesceValue(int Value) : ICoalesceValue
+    public record class IntCoalesceValue(int Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
     {
+        public string? Comment { get; set; }
         public string OutputValue()
         {
             return Value.ToString();
         }
     }
 
-    public record class StringCoalesceValue(string Value) : ICoalesceValue
+    public record class StringCoalesceValue(string Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
     {
+        public string? Comment { get; set; }
         public string OutputValue()
         {
             return @$"""{Value}""";
         }
     }
 
-    public record class BoolCoalesceValue(bool Value) : ICoalesceValue
+    public record class BoolCoalesceValue(bool Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
     {
+        public string? Comment { get; set; }
         public string OutputValue()
         {
             return Value.ToString();
         }
     }
 
-    public record class StringArrayCoalesceValue(string[] Value) : ICoalesceValue
+    public record class StringArrayCoalesceValue(string[] Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
     {
+        public string? Comment { get; set; }
         public string OutputValue()
         {
             var items = new List<string>();
@@ -50,8 +57,10 @@ namespace MassEffectModBuilder.Models
         }
     }
 
-    public class StructCoalesceValue : Dictionary<string, ICoalesceValue>, ICoalesceValue
+    public class StructCoalesceValue : Dictionary<string, ModBuilderCoalesceValue>, ModBuilderCoalesceValue
     {
+        public CoalesceParseAction Action { get; }
+        public string? Comment { get; set; }
         public int? GetInt(string propertyName)
         {
             return ((IntCoalesceValue)this[propertyName])?.Value;
@@ -61,7 +70,7 @@ namespace MassEffectModBuilder.Models
         {
             if (value.HasValue)
             {
-                this[propertyName] = new IntCoalesceValue(value.Value);
+                this[propertyName] = new IntCoalesceValue(value.Value, CoalesceParseAction.None);
             }
             else
             {
@@ -82,7 +91,7 @@ namespace MassEffectModBuilder.Models
             }
             else
             {
-                this[propertyName] = new StringCoalesceValue(value);
+                this[propertyName] = new StringCoalesceValue(value, CoalesceParseAction.None);
             }
         }
 
@@ -95,7 +104,7 @@ namespace MassEffectModBuilder.Models
         {
             if (value.HasValue)
             {
-                this[propertyName] = new BoolCoalesceValue(value.Value);
+                this[propertyName] = new BoolCoalesceValue(value.Value, CoalesceParseAction.None);
             }
             else
             {
@@ -117,7 +126,7 @@ namespace MassEffectModBuilder.Models
         {
             if (value.HasValue)
             {
-                this[propertyName] = new StringCoalesceValue(value.Value.ToString());
+                this[propertyName] = new StringCoalesceValue(value.Value.ToString(), CoalesceParseAction.None);
             }
             else
             {
@@ -134,7 +143,7 @@ namespace MassEffectModBuilder.Models
         {
             if (value != null)
             {
-                this[propertyName] = new StringArrayCoalesceValue(value);
+                this[propertyName] = new StringArrayCoalesceValue(value, CoalesceParseAction.None);
             }
             else
             {

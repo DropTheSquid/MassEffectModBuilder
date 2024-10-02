@@ -65,8 +65,8 @@ namespace MassEffectModBuilder.Models
 
             foreach (var section in ClassConfigs)
             {
-                // output the comment (if any)
-                if (section.Comment != null)
+                // output the comment, if any
+                if (!string.IsNullOrWhiteSpace(section.Comment))
                 {
                     lines.AddRange(section.Comment.Split("\n").Select(x => $"; {x}"));
                 }
@@ -77,28 +77,36 @@ namespace MassEffectModBuilder.Models
                 {
                     foreach (var val in prop)
                     {
-                        lines.AddRange(FormatPropertyLine(propName, val));
+                        lines.AddRange(FormatPropertyLines(propName, val));
                     }
                 }
-                // output an empty line
+                // output an empty line at the end of a class config
                 lines.Add("");
             }
             
             return lines;
         }
 
-        private static IEnumerable<string> FormatPropertyLine(string propertyName, CoalesceValue value)
+        private static IEnumerable<string> FormatPropertyLines(string propertyName, CoalesceValue value)
         {
-            // TODO support comments here?
-            var prefix = GetPrefix(propertyName, value);
-            return [$"{prefix}{propertyName}={value.Value}"];
+            IEnumerable<string> comment;
+            if (!string.IsNullOrWhiteSpace(value.Comment))
+            {
+                comment = value.Comment.Split("\n").Select(x => $"; {x}");
+            }
+            else
+            {
+                comment = [];
+            }
+            var prefix = GetPrefix(value.ParseAction);
+            return [.. comment, $"{prefix}{propertyName}={value.Value}"];
         }
 
-        private static string GetPrefix(string propertyName, CoalesceValue value)
+        private static string GetPrefix(CoalesceParseAction action)
         {
             // TODO deal with double typed things properly?
             // I think I can just leave the other type in the name
-            switch (value.ParseAction)
+            switch (action)
             {
                 case CoalesceParseAction.AddUnique:
                     return "+";

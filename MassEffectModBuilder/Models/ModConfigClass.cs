@@ -69,12 +69,12 @@ namespace MassEffectModBuilder.Models
             return GetSingleValue(propertyName);
         }
 
-        public void SetStringValue(string propertyName, string? value)
+        public void SetStringValue(string propertyName, string? value, string? comment = null)
         {
             Remove(propertyName);
             if (value != null)
             {
-                Add(new CoalesceProperty(propertyName, new CoalesceValue(value, CoalesceParseAction.Add)));
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value, CoalesceParseAction.Add) { Comment = comment}));
             }
         }
 
@@ -87,12 +87,12 @@ namespace MassEffectModBuilder.Models
             return null;
         }
 
-        public void SetEnumValue<TEnum>(string propertyName, TEnum? value) where TEnum : struct
+        public void SetEnumValue<TEnum>(string propertyName, TEnum? value, string? comment = null) where TEnum : struct
         {
             Remove(propertyName);
             if (value != null)
             {
-                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.ToString(), CoalesceParseAction.Add)));
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.ToString(), CoalesceParseAction.Add) { Comment = comment }));
             }
         }
 
@@ -110,9 +110,9 @@ namespace MassEffectModBuilder.Models
             return null;
         }
 
-        public void SetIntValue(string name, int? value)
+        public void SetIntValue(string name, int? value, string? comment = null)
         {
-            SetStringValue(name, value?.ToString());
+            SetStringValue(name, value?.ToString(), comment);
         }
 
         public bool? GetBoolValue(string propertyName)
@@ -129,24 +129,34 @@ namespace MassEffectModBuilder.Models
             return null;
         }
 
-        public void SetBoolValue(string name, bool? value)
+        public void SetBoolValue(string name, bool? value, string? comment = null)
         {
-            SetStringValue(name, value?.ToString());
+            SetStringValue(name, value?.ToString(), comment);
         }
 
-        public void SetStructValue(string propertyName, StructCoalesceValue? value)
+        public void SetStructValue(string propertyName, StructCoalesceValue? value, string? comment = null)
         {
             Remove(propertyName);
             if (value != null)
             {
-                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.OutputValue(), CoalesceParseAction.Add)));
+                Add(new CoalesceProperty(propertyName, new CoalesceValue(value.OutputValue(), CoalesceParseAction.Add) { Comment = comment}));
             }
         }
 
-        public void AddArrayEntries(string name, params string[] values)
+        public void AddArrayEntries(string name, params ModBuilderCoalesceValue[] values)
         {
-            AddArrayEntries(name, (IEnumerable<string>)values);
+            AddArrayEntries(name, (IEnumerable<ModBuilderCoalesceValue>)values);
         }
+
+        public void AddArrayEntries(string name, IEnumerable<ModBuilderCoalesceValue> values)
+        {
+            AddEntry(new CoalesceProperty(name, values.Select(x => x.ToCoalesceValue()).ToList()));
+        }
+
+        //public void AddArrayEntries(string name, params string[] values)
+        //{
+        //    AddArrayEntries(name, (IEnumerable<string>)values);
+        //}
 
         public void AddArrayEntries(string name, IEnumerable<string> values)
         {
