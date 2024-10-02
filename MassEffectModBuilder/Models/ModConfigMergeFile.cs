@@ -65,6 +65,11 @@ namespace MassEffectModBuilder.Models
 
             foreach (var section in ClassConfigs)
             {
+                // output the comment (if any)
+                if (section.Comment != null)
+                {
+                    lines.AddRange(section.Comment.Split("\n").Select(x => $"; {x}"));
+                }
                 // output the header
                 lines.Add($"[{section.TargetConfigFile} {section.ClassFullPath}]");
                 // output each property
