@@ -150,7 +150,7 @@ namespace MassEffectModBuilder.Models
 
         public void AddArrayEntries(string name, IEnumerable<ModBuilderCoalesceValue> values)
         {
-            AddEntry(new CoalesceProperty(name, values.Select(x => x.ToCoalesceValue()).ToList()));
+            AddEntry(new CoalesceProperty(name, values.Select(x => x.ToCoalesceValue(CoalesceParseAction.AddUnique)).ToList()));
         }
 
         //public void AddArrayEntries(string name, params string[] values)

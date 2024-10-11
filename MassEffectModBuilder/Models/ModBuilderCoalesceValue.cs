@@ -9,9 +9,13 @@ namespace MassEffectModBuilder.Models
 
         CoalesceParseAction Action { get; }
 
-        CoalesceValue ToCoalesceValue()
+        CoalesceValue ToCoalesceValue(CoalesceParseAction? action = null)
         {
-            return new CoalesceValue(OutputValue(), Action) { Comment = Comment };
+            if (!action.HasValue)
+            {
+                action = Action;
+            }
+            return new CoalesceValue(OutputValue(), action.Value) { Comment = Comment };
         }
     }
 
