@@ -65,21 +65,16 @@ namespace MassEffectModBuilder.ContextHelpers
         {
             // for each localization, I need to create a pcc file containing the expected exports
             OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk.pcc", MELocalization.INT);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_DE.pcc", MELocalization.DEU);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_GE.pcc", MELocalization.DEU);
+            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_DE.pcc", MELocalization.DEU, fileNameBase + "_GlobalTlk_GE.pcc");
             OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_ES.pcc", MELocalization.ESN);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_FE.pcc", MELocalization.FRA);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_FR.pcc", MELocalization.FRA);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_IE.pcc", MELocalization.ITA);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_IT.pcc", MELocalization.ITA);
+            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_FR.pcc", MELocalization.FRA, fileNameBase + "_GlobalTlk_FE.pcc");
+            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_IT.pcc", MELocalization.ITA, fileNameBase + "_GlobalTlk_IE.pcc");
             OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_JA.pcc", MELocalization.JPN);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_PL.pcc", MELocalization.POL);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_PLPC.pcc", MELocalization.POL);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_RA.pcc", MELocalization.RUS);
-            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_RU.pcc", MELocalization.RUS);
+            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_PL.pcc", MELocalization.POL, fileNameBase + "_GlobalTlk_PLPC.pcc");
+            OutputSingleGame1Tlk(outputFolder, fileNameBase + "_GlobalTlk_RU.pcc", MELocalization.RUS, fileNameBase + "_GlobalTlk_RA.pcc");
         }
 
-        private void OutputSingleGame1Tlk(string outputFolder, string fileName, MELocalization locale)
+        private void OutputSingleGame1Tlk(string outputFolder, string fileName, MELocalization locale, params string[] duplicateFiles)
         {
             // create the actual package
             var pkg = MEPackageHandler.CreateAndOpenPackage(Path.Combine(outputFolder, fileName), Game);
@@ -107,10 +102,15 @@ namespace MassEffectModBuilder.ContextHelpers
                 maleTlks.Add(new TLKStringRef(tlk.Key, tlk.Value.GetData(locale, false)));
             }
 
-            maleHuffman.LoadInputData(femaleTlks);
+            maleHuffman.LoadInputData(maleTlks);
             maleHuffman.SerializeTalkfileToExport(maleExport);
 
             pkg.Save();
+
+            foreach (var dupe in duplicateFiles)
+            {
+                File.Copy(Path.Combine(outputFolder, fileName), Path.Combine(outputFolder, dupe));
+            }
         }
 
         public void OutputGame23Tlks(string outputFolder, string filenameBase)
@@ -196,7 +196,7 @@ namespace MassEffectModBuilder.ContextHelpers
                 return data;
             }
 
-            throw new Exception($"You asked for stringref {Id} but it has not localized or Int data");
+            throw new Exception($"You asked for stringref {Id} but it has no localized or Int data");
         }
 
         public bool HasDistinctFemaleString(MELocalization locale)
