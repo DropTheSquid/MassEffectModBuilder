@@ -113,8 +113,20 @@ namespace MassEffectModBuilder.ContextHelpers
             }
         }
 
-        public void OutputGame23Tlks(string outputFolder, string filenameBase)
+        public void OutputGame23Tlks(string outputFolder, string filenameBase, int localizationStringref)
         {
+            // game 2/3 tlks have a stringref for the localization. I am not sure if it is important, but it is easy enough to make it match vanilla TLKs
+            if (localizationStringref > 0)
+            {
+                AddStringRef(localizationStringref, MELocalization.DEU, "de-de", false);
+                AddStringRef(localizationStringref, MELocalization.ESN, "es-es", false);
+                AddStringRef(localizationStringref, MELocalization.FRA, "fr-fr", false);
+                AddStringRef(localizationStringref, MELocalization.INT, "en-us", false);
+                AddStringRef(localizationStringref, MELocalization.ITA, "it-it", false);
+                AddStringRef(localizationStringref, MELocalization.JPN, "jp-jp", false);
+                AddStringRef(localizationStringref, MELocalization.POL, "pl-pl", false);
+                AddStringRef(localizationStringref, MELocalization.RUS, "ru-ru", false);
+            }
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_DEU.tlk"), MELocalization.DEU);
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_ESN.tlk"), MELocalization.ESN);
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_FRA.tlk"), MELocalization.FRA);
