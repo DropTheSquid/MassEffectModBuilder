@@ -1,4 +1,5 @@
-﻿using LegendaryExplorerCore.Packages;
+﻿using LegendaryExplorerCore.Misc.ME3Tweaks;
+using LegendaryExplorerCore.Packages;
 using MassEffectModBuilder.LEXHelpers;
 using static MassEffectModBuilder.LEXHelpers.LooseClassCompile;
 
@@ -17,7 +18,10 @@ namespace MassEffectModBuilder.DLCTasks
         {
             var file = getFileFunc(context);
 
-            CompileClasses(Classes, file);
+            // compile against the backup; this ensures you are not relying on non vanilla classes that could lead to the game crashing if they are not present
+            var backupPath = ME3TweaksBackups.GetGameBackupPath(context.Game);
+
+            CompileClasses(Classes, file, backupPath);
 
             var objectReferencer = file.GetObjectReferencer();
 
