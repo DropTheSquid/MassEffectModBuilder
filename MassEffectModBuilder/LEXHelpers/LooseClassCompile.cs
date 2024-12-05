@@ -86,7 +86,7 @@ namespace MassEffectModBuilder.LEXHelpers
                         continue;
                     }
                     // This sign can't stop me because I can't read!
-                    if (msg == "Assigning to a 'const' variable! Other code may not account for it changing.")
+                    if (msg.Contains("Assigning to a 'const' variable! Other code may not account for it changing."))
                     {
                         continue;
                     }

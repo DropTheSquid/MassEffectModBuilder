@@ -6,7 +6,7 @@
         {
             foreach (var merge in context.ConfigMergeFiles)
             {
-                var lines = merge.OutputFileContents();
+                var lines = merge.OutputFileContents(context.Game);
                 File.WriteAllLines(Path.Combine(context.CookedPCConsoleFolder, merge.OutputFileName), lines);
             }
         }

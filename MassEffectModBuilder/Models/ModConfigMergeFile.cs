@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Coalesced.Config;
+using LegendaryExplorerCore.Packages;
 
 namespace MassEffectModBuilder.Models
 {
@@ -59,7 +60,7 @@ namespace MassEffectModBuilder.Models
             }
         }
 
-        public IEnumerable<string> OutputFileContents()
+        public IEnumerable<string> OutputFileContents(MEGame game)
         {
             List<string> lines = [];
 
@@ -77,17 +78,17 @@ namespace MassEffectModBuilder.Models
                 {
                     foreach (var val in prop)
                     {
-                        lines.AddRange(FormatPropertyLines(propName, val));
+                        lines.AddRange(FormatPropertyLines(propName, val, game));
                     }
                 }
                 // output an empty line at the end of a class config
                 lines.Add("");
             }
-            
+
             return lines;
         }
 
-        private static IEnumerable<string> FormatPropertyLines(string propertyName, CoalesceValue value)
+        private static IEnumerable<string> FormatPropertyLines(string propertyName, CoalesceValue value, MEGame game)
         {
             IEnumerable<string> comment;
             if (!string.IsNullOrWhiteSpace(value.Comment))
@@ -98,29 +99,50 @@ namespace MassEffectModBuilder.Models
             {
                 comment = [];
             }
-            var prefix = GetPrefix(value.ParseAction);
+            var prefix = GetPrefix(value, game);
             return [.. comment, $"{prefix}{propertyName}={value.Value}"];
         }
 
-        private static string GetPrefix(CoalesceParseAction action)
+        private static string GetPrefix(CoalesceValue value, MEGame game)
         {
+            if (game == MEGame.LE1 && value.DoubleTypePrefix != null)
+            {
+                Console.WriteLine("warning: you are trying to use double types on an LE1 config merge.");
+                value.DoubleTypePrefix = null;
+            }
+
+            switch (value.DoubleTypePrefix)
+            {
+                case "+":
+                case ".":
+                    break;
+                case null:
+                    value.DoubleTypePrefix = "";
+                    break;
+                default:
+                    Console.WriteLine($"Warning: invalid double typing prefix {value.DoubleTypePrefix}");
+                    value.DoubleTypePrefix = "";
+                    break;
+            }
+
+
             // TODO deal with double typed things properly?
             // I think I can just leave the other type in the name
-            switch (action)
+            switch (value.ParseAction)
             {
                 case CoalesceParseAction.AddUnique:
-                    return "+";
+                    return $"{value.DoubleTypePrefix}+";
                 case CoalesceParseAction.Remove:
-                    return "-";
+                    return $"{value.DoubleTypePrefix}-";
                 case CoalesceParseAction.RemoveProperty:
-                    return "!";
+                    return $"{value.DoubleTypePrefix}!";
                 case CoalesceParseAction.New:
-                    return ">";
+                    return $"{value.DoubleTypePrefix}>";
                 case CoalesceParseAction.None:
                 case CoalesceParseAction.Add:
                 default:
                     // could also return "." here but I think it looks cleaner this way
-                    return "";
+                    return value.DoubleTypePrefix == "" ? "" : $"{value.DoubleTypePrefix}.";
             }
         }
     }

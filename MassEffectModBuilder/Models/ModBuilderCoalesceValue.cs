@@ -1,4 +1,5 @@
 ﻿using LegendaryExplorerCore.Coalesced;
+using static MassEffectModBuilder.Models.StructCoalesceValue;
 
 namespace MassEffectModBuilder.Models
 {
@@ -9,50 +10,67 @@ namespace MassEffectModBuilder.Models
 
         CoalesceParseAction Action { get; }
 
+        // used for the M3CD double typing where you can precede an entry with ++ or +- to add the signel typed entry into your mod's local stuff without "merging" it
+        // so "-foo=bar" would remove "foo=bar" from your local config (if present) but would not affect if that entry exists in another lower mounted mod/basegame
+        // "+-foo=bar" will add "-foo=bar" into your local ini/bin files, thus removing it from lower mounted/basegame config when your dlc is mounted
+        // only relevant for 2 and 3. LE1 does not use this, sinc emerges happen in the basegame coalesced at install time
+        // the only valid values are + (add if unique) and . (add even if it is a duplicate)
+        string? DoubleType { get; }
+
         CoalesceValue ToCoalesceValue(CoalesceParseAction? action = null)
         {
             if (!action.HasValue)
             {
                 action = Action;
             }
-            return new CoalesceValue(OutputValue(), action.Value) { Comment = Comment };
+            return new CoalesceValue(OutputValue(), action.Value) { Comment = Comment, DoubleTypePrefix = DoubleType };
         }
     }
 
-    public record class IntCoalesceValue(int Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
+    public abstract record class ModBuilderCoalesceValue<V>(V Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
     {
         public string? Comment { get; set; }
-        public string OutputValue()
+
+        public string? DoubleType { get; set; }
+        public abstract string OutputValue();
+    }
+
+    public record class IntCoalesceValue(int Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue<int>(Value, Action)
+    {
+        public override string OutputValue()
         {
             return Value.ToString();
         }
     }
 
-    public record class StringCoalesceValue(string Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
+    public record class StringCoalesceValue(string Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue<string>(Value, Action)
     {
-        public string? Comment { get; set; }
-        public string OutputValue()
+        public override string OutputValue()
         {
             return @$"""{Value}""";
         }
     }
 
-    public record class BoolCoalesceValue(bool Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
+    public record class BoolCoalesceValue(bool Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue<bool>(Value, Action)
     {
-        public string? Comment { get; set; }
-        public string OutputValue()
+        public override string OutputValue()
         {
             return Value.ToString();
         }
     }
 
-    public record class StringArrayCoalesceValue(string[] Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue
+    public class StringArrayCoalesceValue : List<string>, ModBuilderCoalesceValue
     {
         public string? Comment { get; set; }
+
+        public string? DoubleType { get; set;  }
+
+        public CoalesceParseAction Action { get; set; } = CoalesceParseAction.None;
+
         public string OutputValue()
         {
             var items = new List<string>();
-            foreach (var item in Value)
+            foreach (var item in this)
             {
                 items.Add(@$"""{item}""");
             }
@@ -61,10 +79,34 @@ namespace MassEffectModBuilder.Models
         }
     }
 
+    // TODO arrays for other primatives as they come up
+
     public class StructCoalesceValue : Dictionary<string, ModBuilderCoalesceValue>, ModBuilderCoalesceValue
     {
-        public CoalesceParseAction Action { get; }
+        public class StructArrayCoalesceValue<T> : List<T>, ModBuilderCoalesceValue where T : StructCoalesceValue
+        {
+            public string? Comment { get; set; }
+
+            public CoalesceParseAction Action { get; set; } = CoalesceParseAction.None;
+
+            public string? DoubleType { get; set; }
+
+            public string OutputValue()
+            {
+                var items = new List<string>();
+                foreach (var item in this)
+                {
+                    items.Add(item.OutputValue());
+                }
+
+                return $"({string.Join(",", items)})";
+            }
+        }
+
+        public CoalesceParseAction Action { get; set; } = CoalesceParseAction.None;
         public string? Comment { get; set; }
+
+        public string? DoubleType { get; set; }
         public int? GetInt(string propertyName)
         {
             return ((IntCoalesceValue)this[propertyName])?.Value;
@@ -140,14 +182,53 @@ namespace MassEffectModBuilder.Models
 
         public string[]? GetStringArray(string propertyName)
         {
-            return ((StringArrayCoalesceValue)this[propertyName])?.Value;
+            return ((StringArrayCoalesceValue)this[propertyName])?.ToArray();
         }
 
         public void SetStringArray(string propertyName, string[]? value)
         {
             if (value != null)
             {
-                this[propertyName] = new StringArrayCoalesceValue(value, CoalesceParseAction.None);
+                StringArrayCoalesceValue stringArrayProp;
+                if (TryGetValue(propertyName, out var prop) && prop is StringArrayCoalesceValue)
+                {
+                    stringArrayProp = (StringArrayCoalesceValue)prop;
+                    stringArrayProp.Clear();
+                    stringArrayProp.AddRange(value);
+                }
+                else
+                {
+                    stringArrayProp = [.. value];
+                    this[propertyName] = stringArrayProp;
+                }
+            }
+            else
+            {
+                Remove(propertyName);
+            }
+        }
+
+        public StructArrayCoalesceValue<T>? GetStructArray<T>(string propertyName) where T : StructCoalesceValue
+        {
+            return ((StructArrayCoalesceValue<T>)this[propertyName]);
+        }
+
+        public void SetStructArray<T>(string propertyName, IEnumerable<T>? value) where T : StructCoalesceValue
+        {
+            if (value != null)
+            {
+                StructArrayCoalesceValue<T> structArrayProp;
+                if (TryGetValue(propertyName, out var prop) && prop is StructArrayCoalesceValue<T>)
+                {
+                    structArrayProp = (StructArrayCoalesceValue<T>)prop;
+                    structArrayProp.Clear();
+                    structArrayProp.AddRange(value);
+                }
+                else
+                {
+                    structArrayProp = [.. value];
+                    this[propertyName] = structArrayProp;
+                }
             }
             else
             {
