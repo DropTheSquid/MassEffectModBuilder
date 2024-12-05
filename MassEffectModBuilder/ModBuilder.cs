@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore;
 using LegendaryExplorerCore.Packages;
+using MassEffectModBuilder.DLCTasks;
 
 namespace MassEffectModBuilder
 {
@@ -23,11 +24,27 @@ namespace MassEffectModBuilder
         /// </summary>
         public int? ModuleNumber { get; init; }
 
+        /// <summary>
+        /// only applicable to games 2 and 3; the tlks contain a stringref that indicates what localization it is in
+        /// </summary>
+        public int? LocalizationStringref { get; init; }
+
+        public bool OutputConfigAndTlk { get; set; } = true;
+
         protected readonly List<IModBuilderTask> ModBuilderTasks = [];
 
         public virtual ModBuilder AddTask(IModBuilderTask task)
         {
             ModBuilderTasks.Add(task);
+            return this;
+        }
+
+        public virtual ModBuilder AddTasks(params IModBuilderTask[] tasks)
+        {
+            foreach (var task in tasks) 
+            { 
+                AddTask(task);
+            }
             return this;
         }
 
@@ -39,12 +56,18 @@ namespace MassEffectModBuilder
 
             var context = new ModBuilderContext(this);
 
+            if (OutputConfigAndTlk)
+            {
+                AddTasks(
+                    new OutputConfigMerge(),
+                    new OutputTlk(LocalizationStringref)
+                );
+            }
+
             foreach (var task in ModBuilderTasks)
             {
                 task.RunModTask(context);
             }
-
-            // TODO run tlk output, merge mod output just in case there is anything there?
         }
     }
 
@@ -55,9 +78,19 @@ namespace MassEffectModBuilder
             ModBuilderTasks.Add(task);
             return this;
         }
+
         public ModBuilderWithCustomContext<T> AddTask(IModBuilderTaskWithCustomContext<T> task)
         {
             ModBuilderTasks.Add(task);
+            return this;
+        }
+
+        public override ModBuilderWithCustomContext<T> AddTasks(params IModBuilderTask[] tasks)
+        {
+            foreach (var task in tasks)
+            {
+                AddTask(task);
+            }
             return this;
         }
 
@@ -68,6 +101,14 @@ namespace MassEffectModBuilder
             LegendaryExplorerCoreLib.InitLib(TaskScheduler.Current, x => Console.Error.WriteLine($"Failed to save package: {x}"));
 
             var context = new ModBuilderCustomContext<T>(this, customContext);
+
+            if (OutputConfigAndTlk)
+            {
+                AddTasks(
+                    new OutputConfigMerge(),
+                    new OutputTlk(LocalizationStringref)
+                );
+            }
 
             foreach (var task in ModBuilderTasks)
             {

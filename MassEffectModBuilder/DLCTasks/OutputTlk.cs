@@ -2,7 +2,7 @@
 
 namespace MassEffectModBuilder.DLCTasks
 {
-    public record class OutputTlk(int LocalizationString = 0) : IModBuilderTask
+    public record class OutputTlk(int? LocalizationString = null) : IModBuilderTask
     {
         public void RunModTask(ModBuilderContext context)
         {

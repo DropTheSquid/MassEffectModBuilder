@@ -11,7 +11,7 @@ namespace MassEffectModBuilder.LEXHelpers
             public readonly string InstancedFullPath => string.Join(".", [.. PackagePath ?? [], ClassName]);
         }
 
-        public static void CompileClasses(IEnumerable<ClassToCompile> classes, IMEPackage package, string? overrideGameRoot = null)
+        public static void CompileClasses(IEnumerable<ClassToCompile> classes, IMEPackage package, string? overrideGameRoot = null, bool emitAllWarnings = false)
         {
             IEnumerable<UnrealScriptCompiler.LooseClassPackageEx> internalClasses = [];
 
@@ -48,10 +48,10 @@ namespace MassEffectModBuilder.LEXHelpers
                 .GroupBy(x => x.PackagePath ?? [])
                 .Select(x => new UnrealScriptCompiler.LooseClassPackageEx(x.Key, x.Select(y => new UnrealScriptCompiler.LooseClass(y.ClassName, y.SourceCode)).ToList()));
 
-            CompileClassesInternal(internalClasses.ToList(), package, overrideGameRoot);
+            CompileClassesInternal(internalClasses.ToList(), package, overrideGameRoot, emitAllWarnings);
         }
 
-        private static void CompileClassesInternal(List<UnrealScriptCompiler.LooseClassPackageEx> classesToCompile, IMEPackage pcc, string? overrideGameRoot)
+        private static void CompileClassesInternal(List<UnrealScriptCompiler.LooseClassPackageEx> classesToCompile, IMEPackage pcc, string? overrideGameRoot, bool emitAllWarnings)
         {
             // copied from SirC's LEX experiments for loose class compile
             static IEntry MissingObjectResolver(IMEPackage pcc, string instancedPath)
@@ -77,6 +77,20 @@ namespace MassEffectModBuilder.LEXHelpers
             }
             foreach (var warning in messages.AllWarnings)
             {
+                var msg = warning.ToString();
+                if (!emitAllWarnings)
+                {
+                    // no need to emit warnings about private/protected functions
+                    if (msg.Contains("is a private function in") || msg.Contains("is a protected function in"))
+                    {
+                        continue;
+                    }
+                    // This sign can't stop me because I can't read!
+                    if (msg == "Assigning to a 'const' variable! Other code may not account for it changing.")
+                    {
+                        continue;
+                    }
+                }
                 Console.WriteLine(warning);
             }
         }
