@@ -7,7 +7,10 @@
             foreach (var merge in context.ConfigMergeFiles)
             {
                 var lines = merge.OutputFileContents(context.Game);
-                File.WriteAllLines(Path.Combine(context.CookedPCConsoleFolder, merge.OutputFileName), lines);
+                var path = Path.Combine(context.CookedPCConsoleFolder, merge.OutputFileName);
+                // make sure the folder exists
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllLines(path, lines);
             }
         }
     }

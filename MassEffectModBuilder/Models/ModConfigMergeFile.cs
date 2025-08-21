@@ -10,9 +10,10 @@ namespace MassEffectModBuilder.Models
 
         public ModConfigMergeFile(string outputFileName)
         {
-            if (!outputFileName.StartsWith(ConfigMerge.CONFIG_MERGE_PREFIX) 
-                || !outputFileName.EndsWith(ConfigMerge.CONFIG_MERGE_EXTENSION)
-                || outputFileName == $"{ConfigMerge.CONFIG_MERGE_PREFIX}{ConfigMerge.CONFIG_MERGE_EXTENSION}")
+            var fileName = Path.GetFileName(outputFileName);
+            if (!fileName.StartsWith(ConfigMerge.CONFIG_MERGE_PREFIX) 
+                || !fileName.EndsWith(ConfigMerge.CONFIG_MERGE_EXTENSION)
+                || fileName == $"{ConfigMerge.CONFIG_MERGE_PREFIX}{ConfigMerge.CONFIG_MERGE_EXTENSION}")
             {
                 throw new Exception($"Invalid config merge file name {outputFileName}");
             }
