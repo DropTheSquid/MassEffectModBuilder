@@ -12,13 +12,13 @@ namespace MassEffectModBuilder.DLCTasks
 
             var resourcePackages = MEPackageHandler.OpenMEPackages(ResourceFiles);
 
-            foreach ( var resourcePackage in resourcePackages )
+            foreach (var resourcePackage in resourcePackages)
             {
                 var referencer = resourcePackage.GetObjectReferencer();
                 if (referencer != null)
                 {
                     var entries = referencer.GetReferencedEntries();
-                    foreach(var entry in entries )
+                    foreach (var entry in entries)
                     {
                         if (entry is ExportEntry export)
                         {

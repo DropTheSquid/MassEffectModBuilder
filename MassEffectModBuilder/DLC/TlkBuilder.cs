@@ -5,22 +5,41 @@ using Game1Huffman = LegendaryExplorerCore.TLK.ME1.HuffmanCompression;
 using Game23Huffman = LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression;
 
 
-namespace MassEffectModBuilder.ContextHelpers
+namespace MassEffectModBuilder.DLC
 {
+    /// <summary>
+    /// Allows you to build all the TLKs for a dlc.
+    /// </summary>
+    /// <param name="Game"></param>
     public record class TlkBuilder(MEGame Game)
     {
-        public static bool WarnOnMissingLocalization = false;
+        /// <summary>
+        /// Whether to log a warning if a stringref is missing any localizations. Default false.
+        /// </summary>
+        public bool WarnOnMissingLocalization { get; set; } = false;
 
         private readonly Dictionary<int, StringRefBuilder> stringRefs = [];
+
+        /// <summary>
+        /// Imports an XML file exported from a Game1 tlk
+        /// </summary>
+        /// <param name="xmlPath">The path to the XML file</param>
+        /// <param name="locale">The locale this xml file is for.</param>
+        /// <param name="female">whether this is the female specific strings.</param>
         public void ImportME1Xml(string xmlPath, MELocalization locale, bool female)
         {
             var stringRefs = TlkHelpers.ParseGame1TlkXml(xmlPath);
             foreach (var stringRef in stringRefs)
             {
-                AddStringRef(stringRef.CalculatedID, locale, stringRef.Data, female);
+                AddStringRef(stringRef.StringID, locale, stringRef.Data, female);
             }
         }
 
+        /// <summary>
+        /// Imports an XML exported from a Game2/3 TLK file.
+        /// </summary>
+        /// <param name="xmlPath">The path to the xml file.</param>
+        /// <param name="locale">The locale this xml is for</param>
         public void ImportME2ME3Xml(string xmlPath, MELocalization locale)
         {
             var maleDict = new Dictionary<int, TLKStringRef>();
@@ -50,6 +69,13 @@ namespace MassEffectModBuilder.ContextHelpers
             }
         }
 
+        /// <summary>
+        /// Adds a single stringref, for a specific id, locale, and gender.
+        /// </summary>
+        /// <param name="id">The stringref ID</param>
+        /// <param name="locale">The locale for this stringref</param>
+        /// <param name="data">The string data</param>
+        /// <param name="female">whether this is a female specific string. Otherwise, it is counted as male/gender neutral</param>
         public void AddStringRef(int id, MELocalization locale, string data, bool female)
         {
             if (!stringRefs.TryGetValue(id, out var stringRef))
@@ -58,9 +84,31 @@ namespace MassEffectModBuilder.ContextHelpers
                 stringRefs.Add(id, stringRef);
             }
             stringRef.AddLocalization(locale, data, female);
-
         }
 
+        /// <summary>
+        /// Adds a stringref for every localization.
+        /// </summary>
+        /// <param name="id">Stringref id</param>
+        /// <param name="data">the string data</param>
+        /// <param name="female">whether this is a female specific stringref</param>
+        public void AddConstantStringRef(int id, string data, bool female = false)
+        {
+            AddStringRef(id, MELocalization.DEU, data, female);
+            AddStringRef(id, MELocalization.ESN, data, female);
+            AddStringRef(id, MELocalization.FRA, data, female);
+            AddStringRef(id, MELocalization.INT, data, female);
+            AddStringRef(id, MELocalization.ITA, data, female);
+            AddStringRef(id, MELocalization.JPN, data, female);
+            AddStringRef(id, MELocalization.POL, data, female);
+            AddStringRef(id, MELocalization.RUS, data, female);
+        }
+
+        /// <summary>
+        /// Output Game 1 tlk files for all localizations
+        /// </summary>
+        /// <param name="outputFolder">The folder to output them in</param>
+        /// <param name="fileNameBase">The base of the filenames</param>
         public void OutputGame1Tlks(string outputFolder, string fileNameBase)
         {
             // for each localization, I need to create a pcc file containing the expected exports
@@ -113,20 +161,14 @@ namespace MassEffectModBuilder.ContextHelpers
             }
         }
 
-        public void OutputGame23Tlks(string outputFolder, string filenameBase, int? localizationStringref)
+        /// <summary>
+        /// Output Game2/3 TLK files for all localizations
+        /// </summary>
+        /// <param name="outputFolder">The folder in which to output them</param>
+        /// <param name="filenameBase"></param>
+        public void OutputGame23Tlks(string outputFolder, string filenameBase)
         {
             // game 2/3 tlks have a stringref for the localization. I am not sure if it is important, but it is easy enough to make it match vanilla TLKs
-            if (localizationStringref.HasValue && localizationStringref > 0)
-            {
-                AddStringRef(localizationStringref.Value, MELocalization.DEU, "de-de", false);
-                AddStringRef(localizationStringref.Value, MELocalization.ESN, "es-es", false);
-                AddStringRef(localizationStringref.Value, MELocalization.FRA, "fr-fr", false);
-                AddStringRef(localizationStringref.Value, MELocalization.INT, "en-us", false);
-                AddStringRef(localizationStringref.Value, MELocalization.ITA, "it-it", false);
-                AddStringRef(localizationStringref.Value, MELocalization.JPN, "jp-jp", false);
-                AddStringRef(localizationStringref.Value, MELocalization.POL, "pl-pl", false);
-                AddStringRef(localizationStringref.Value, MELocalization.RUS, "ru-ru", false);
-            }
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_DEU.tlk"), MELocalization.DEU);
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_ESN.tlk"), MELocalization.ESN);
             OutputSingleGame23Tlk(Path.Combine(outputFolder, filenameBase + "_FRA.tlk"), MELocalization.FRA);
@@ -154,6 +196,49 @@ namespace MassEffectModBuilder.ContextHelpers
             }
 
             Game23Huffman.SaveToTlkFile(filePath, outputStringRefs);
+        }
+
+        public void InitTlk(int tlkBaseId, string modInternalName, string ModDlcFolderName, int? Game2ModuleNumber = null)
+        {
+            switch (Game)
+            {
+                //case MEGame.ME1:
+                case MEGame.LE1:
+                    AddConstantStringRef(tlkBaseId, modInternalName);
+                    break;
+                case MEGame.ME2:
+                case MEGame.LE2:
+                case MEGame.ME3:
+                case MEGame.LE3:
+                    AddConstantStringRef(tlkBaseId, modInternalName);
+                    if (Game.IsGame2())
+                    {
+                        // DLC_Module#
+                        AddConstantStringRef(tlkBaseId + 1, $"DLC_{Game2ModuleNumber}");
+                    }
+                    if (Game.IsGame3())
+                    {
+                        // DLC_MOD_Whatever
+                        AddConstantStringRef(tlkBaseId + 1, $"{ModDlcFolderName}");
+                    }
+
+                    // add the localization
+                    AddStringRef(tlkBaseId + 2, MELocalization.DEU, "de-de", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.ESN, "es-es", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.FRA, "fr-fr", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.INT, "en-us", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.ITA, "it-it", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.JPN, "jp-jp", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.POL, "pl-pl", false);
+                    AddStringRef(tlkBaseId + 2, MELocalization.RUS, "ru-ru", false);
+
+                    // add the male/female entries
+                    AddConstantStringRef(tlkBaseId + 3, "Male");
+                    AddConstantStringRef(tlkBaseId + 3, "Female", true);
+                    break;
+                default:
+                    throw new ApplicationException($"unsupported game {Game}");
+            }
         }
     }
 
@@ -195,10 +280,10 @@ namespace MassEffectModBuilder.ContextHelpers
                 {
                     return nonIntData;
                 }
-                if (TlkBuilder.WarnOnMissingLocalization)
-                {
-                    Console.WriteLine($"Warning: you asked for the {locale} version of stringref {Id} but there is no localization; falling back to English");
-                }
+                //if (WarnOnMissingLocalization)
+                //{
+                //    Console.WriteLine($"Warning: you asked for the {locale} version of stringref {Id} but there is no localization; falling back to English");
+                //}
                 // fall back to int if there is no specific localization
                 locale = MELocalization.INT;
             }

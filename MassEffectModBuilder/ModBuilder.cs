@@ -1,38 +1,94 @@
 ﻿using LegendaryExplorerCore;
 using LegendaryExplorerCore.Packages;
-using MassEffectModBuilder.DLCTasks;
+using MassEffectModBuilder.DLC;
+using MassEffectModBuilder.Folder;
+using MassEffectModBuilder.Merge;
 
 namespace MassEffectModBuilder
 {
     public class ModBuilder
     {
-        public required MEGame Game { get; init; }
-        /// <summary>
-        /// Full or relative path to the base of the mod (the folder which should contain the moddesc)
-        /// </summary>
-        public required string ModOutputPathBase { get; init; }
+        public ModBuilder(MEGame game, string modName, string developerName, string version, string description)
+        {
+            ModDesc = new ModDesc(game, modName, developerName, version, description);
+            Game = game;
+            ModName = modName;
+            DeveloperName = developerName;
+            Version = version;
+            Description = description;
+        }
+
+        public string ModName { get; }
+
+        public string DeveloperName { get;}
+
+        public string Version { get; }
+
+        public string Description { get; }
+
+        public string? ModWebsite
+        {
+            get => ModDesc.ModSite;
+            set => ModDesc.ModSite = value;
+        }
+
+        public ModBuilder RequiresTextureOverrideAsi()
+        {
+            var groupId = Game switch
+            {
+                MEGame.LE1 => 88,
+                MEGame.LE2 => 89,
+                MEGame.LE3 => 87,
+                _ => 0
+            };
+            if (groupId != 0)
+            {
+                ModDesc.RequiresAsi(groupId);
+            }
+            return this;
+        }
 
         /// <summary>
-        /// Name of the DLC mod, for example "DLC_MOD_Whatever"
+        ///  The game this mod targets
         /// </summary>
-        public required string ModDLCName { get; init; }
-
-        public string? StartupName { get; init; } = null;
-
-        /// <summary>
-        /// Only applicable to ME2/LE2, but required for some tasks for those games. Set during starter kit, stored in the mount file. 
-        /// </summary>
-        public int? ModuleNumber { get; init; }
-
-        /// <summary>
-        /// only applicable to games 2 and 3; the tlks contain a stringref that indicates what localization it is in
-        /// </summary>
-        public int? LocalizationStringref { get; init; }
-
-        public bool OutputConfigAndTlk { get; set; } = true;
+        public MEGame Game { get; }
 
         protected readonly List<IModBuilderTask> ModBuilderTasks = [];
 
+        public ModDesc ModDesc { get; private set; }
+
+        /// <summary>
+        /// Allows you to add one or more DLCs to this mod
+        /// </summary>
+        /// <param name="dlc"></param>
+        public ModBuilder WithDlc(DlcBuilder dlc, bool alwaysInstall = true)
+        {
+            return AddTask(new DlcBuilderTask(dlc, alwaysInstall));
+        }
+
+        /// <summary>
+        /// Allows you to add one or more m3m merge mods to this mod
+        /// </summary>
+        /// <param name="merge"></param>
+        public ModBuilder WithMergeMod(MergeBuilder merge, bool alwaysInstall = true)
+        {
+            return AddTask(new MergeBuilderTask(merge, alwaysInstall));
+        }
+
+        /// <summary>
+        /// Allows you to add one or more extra folders to this mod (options, patches, templates, etc)
+        /// </summary>
+        /// <param name="folder"></param>
+        public ModBuilder WithExtraFolder(FolderBuilder folder)
+        {
+            return AddTask(new FolderBuilderTask(folder));
+        }
+
+        /// <summary>
+        /// Allows you to add tasks that change the mod outside of any subfolders
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
         public virtual ModBuilder AddTask(IModBuilderTask task)
         {
             ModBuilderTasks.Add(task);
@@ -41,52 +97,6 @@ namespace MassEffectModBuilder
 
         public virtual ModBuilder AddTasks(params IModBuilderTask[] tasks)
         {
-            foreach (var task in tasks) 
-            { 
-                AddTask(task);
-            }
-            return this;
-        }
-
-        public virtual void Build()
-        {
-            Console.WriteLine($"Starting mod build into {ModOutputPathBase}");
-            // init the library
-            LegendaryExplorerCoreLib.InitLib(TaskScheduler.Current, x => Console.Error.WriteLine($"Failed to save package: {x}"));
-
-            var context = new ModBuilderContext(this);
-
-            if (OutputConfigAndTlk)
-            {
-                AddTasks(
-                    new OutputConfigMerge(),
-                    new OutputTlk(LocalizationStringref)
-                );
-            }
-
-            foreach (var task in ModBuilderTasks)
-            {
-                task.RunModTask(context);
-            }
-        }
-    }
-
-    public class ModBuilderWithCustomContext<T> : ModBuilder where T : class
-    {
-        public override ModBuilderWithCustomContext<T> AddTask(IModBuilderTask task)
-        {
-            ModBuilderTasks.Add(task);
-            return this;
-        }
-
-        public ModBuilderWithCustomContext<T> AddTask(IModBuilderTaskWithCustomContext<T> task)
-        {
-            ModBuilderTasks.Add(task);
-            return this;
-        }
-
-        public override ModBuilderWithCustomContext<T> AddTasks(params IModBuilderTask[] tasks)
-        {
             foreach (var task in tasks)
             {
                 AddTask(task);
@@ -94,35 +104,88 @@ namespace MassEffectModBuilder
             return this;
         }
 
-        public void Build(T customContext)
+        public virtual void Build(string modOutputBasePath)
         {
-            Console.WriteLine($"Starting mod build into {ModOutputPathBase}");
+            Console.WriteLine($"Starting mod build into {modOutputBasePath}");
             // init the library
             LegendaryExplorerCoreLib.InitLib(TaskScheduler.Current, x => Console.Error.WriteLine($"Failed to save package: {x}"));
 
-            var context = new ModBuilderCustomContext<T>(this, customContext);
+            var context = GetNewContext(modOutputBasePath);
 
-            if (OutputConfigAndTlk)
+            if (Directory.Exists(modOutputBasePath))
             {
-                AddTasks(
-                    new OutputConfigMerge(),
-                    new OutputTlk(LocalizationStringref)
-                );
+                Directory.Delete(modOutputBasePath, true);
             }
+            Directory.CreateDirectory(modOutputBasePath);
 
             foreach (var task in ModBuilderTasks)
             {
-                if (task is IModBuilderTaskWithCustomContext<T> taskWithCustomContext)
-                {
-                    taskWithCustomContext.RunModTask(context);
-                }
-                else
-                {
-                    task.RunModTask(context);
-                }
+                task.RunModTask(context);
             }
 
-            // TODO run tlk output, merge mod output just in case there is anything there?
+            ModDesc.OutputModDesc(modOutputBasePath);
+        }
+
+        protected virtual ModBuilderContext GetNewContext(string modOutputBasePath)
+        {
+            return new ModBuilderContext(this, modOutputBasePath);
+        }
+
+        public class DlcBuilderTask(DlcBuilder builder, bool alwaysInstall) : IModBuilderTask
+        {
+            public void RunModTask(ModBuilderContext context)
+            {
+                if (alwaysInstall)
+                {
+                    context.ModDesc.AddDlc(builder.DlcFolderName, builder.DlcFolderName);
+                }
+                builder.Build(context);
+            }
+        }
+
+        public class MergeBuilderTask(MergeBuilder builder, bool alwaysInstall) : IModBuilderTask
+        {
+            public void RunModTask(ModBuilderContext context)
+            {
+                if (alwaysInstall)
+                {
+                    context.ModDesc.AddMerge(builder.M3mName);
+                }
+                // make sure the merge folder exists
+                Directory.CreateDirectory(context.MergeModsFolder);
+                builder.Build(context);
+            }
+        }
+
+        public class FolderBuilderTask(FolderBuilder builder) : IModBuilderTask
+        {
+            public void RunModTask(ModBuilderContext context)
+            {
+                builder.Build(context);
+            }
         }
     }
+
+    //public class ModBuilder<T> : ModBuilder where T : new()
+    //{
+    //    public ModBuilder AddTask(IModBuilderTask<T> task)
+    //    {
+    //        ModBuilderTasks.Add(task);
+    //        return this;
+    //    }
+
+    //    public ModBuilder AddTasks(params IModBuilderTask<T>[] tasks)
+    //    {
+    //        foreach (var task in tasks)
+    //        {
+    //            AddTask(task);
+    //        }
+    //        return this;
+    //    }
+
+    //    protected override ModBuilderContext GetNewContext(string modOutputBasePath)
+    //    {
+    //        return new ModBuilderContext<T>(this, modOutputBasePath);
+    //    }
+    //}
 }

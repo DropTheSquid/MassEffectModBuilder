@@ -17,7 +17,7 @@ namespace MassEffectModBuilder.Models
         // the only valid values are + (add if unique) and . (add even if it is a duplicate)
         string? DoubleType { get; }
 
-        CoalesceValue ToCoalesceValue(CoalesceParseAction? action = null)
+        public CoalesceValue ToCoalesceValue(CoalesceParseAction? action = null)
         {
             if (!action.HasValue)
             {

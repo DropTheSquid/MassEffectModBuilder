@@ -4,8 +4,9 @@ using LegendaryExplorerCore.Packages;
 
 namespace MassEffectModBuilder.Models
 {
-    public class ModConfigMergeFile : ModConfigFile
+    public class ModConfigMergeFile
     {
+        protected List<ModConfigClass> ClassConfigs = [];
         public string OutputFileName { get; private set; }
 
         public ModConfigMergeFile(string outputFileName)
@@ -18,12 +19,6 @@ namespace MassEffectModBuilder.Models
                 throw new Exception($"Invalid config merge file name {outputFileName}");
             }
             OutputFileName = outputFileName;
-        }
-
-        public override ModConfigClass GetOrCreateClass(string classFullPath)
-        {
-            var config = ClassConfigs.FirstOrDefault(x => x.ClassFullPath == classFullPath);
-            return config ?? throw new Exception($"Could not find existing class with path {classFullPath}; you must specify the target config file when creating a new class config for a config merge");
         }
 
         public ModConfigClass GetOrCreateClass(string classFullPath, string targetConfigFile)

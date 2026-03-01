@@ -8,7 +8,7 @@ namespace MassEffectModBuilder.Models
         public string ClassFullPath { get; set; } = classFullPath;
 
         /// <summary>
-        /// The config file this class's options should merge into. Only applicable for m3cd files. 
+        /// The config file this class's options should merge into. Only applicable for m3cd files.
         /// </summary>
         public string? TargetConfigFile { get; set; } = targetConfigFile;
 
@@ -30,7 +30,7 @@ namespace MassEffectModBuilder.Models
             }
         }
 
-        protected void Add(CoalesceProperty property)
+        public void Add(CoalesceProperty property)
         {
             Add(property.Name, property);
         }

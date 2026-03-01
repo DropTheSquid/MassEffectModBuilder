@@ -1,17 +1,17 @@
-﻿using LegendaryExplorerCore.Packages;
-using MassEffectModBuilder.LEXHelpers;
+﻿//using LegendaryExplorerCore.Packages;
+//using MassEffectModBuilder.LEXHelpers;
 
-namespace MassEffectModBuilder.DLCTasks
-{
-    public class InitializeStartup : IModBuilderTask
-    {
-        public void RunModTask(ModBuilderContext context)
-        {
-            var startup = context.GetStartupFile();
+//namespace MassEffectModBuilder.DLCTasks
+//{
+//    public class InitializeStartup : IModBuilderTask
+//    {
+//        public void RunModTask(ModBuilderContext context)
+//        {
+//            var startup = context.GetStartupFile();
 
-            startup.AddObjectReferencer("CombinedStartupReferencer", false);
+//            startup.AddObjectReferencer("CombinedStartupReferencer", false);
 
-            startup.Save();
-        }
-    }
-}
+//            startup.Save();
+//        }
+//    }
+//}
