@@ -1,5 +1,4 @@
 ﻿using LegendaryExplorerCore.Coalesced;
-using static MassEffectModBuilder.Models.StructCoalesceValue;
 
 namespace MassEffectModBuilder.Models
 {
@@ -33,6 +32,15 @@ namespace MassEffectModBuilder.Models
 
         public string? DoubleType { get; set; }
         public abstract string OutputValue();
+
+        public CoalesceValue ToCoalesceValue(CoalesceParseAction? action = null)
+        {
+            if (!action.HasValue)
+            {
+                action = Action;
+            }
+            return new CoalesceValue(OutputValue(), action.Value) { Comment = Comment, DoubleTypePrefix = DoubleType };
+        }
     }
 
     public record class IntCoalesceValue(int Value, CoalesceParseAction Action = CoalesceParseAction.None) : ModBuilderCoalesceValue<int>(Value, Action)

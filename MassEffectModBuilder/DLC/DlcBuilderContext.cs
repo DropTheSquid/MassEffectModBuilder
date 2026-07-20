@@ -1,7 +1,6 @@
-﻿using LegendaryExplorerCore.Misc;
+﻿using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using MassEffectModBuilder.Models;
-using MassEffectModBuilder.Package;
 
 namespace MassEffectModBuilder.DLC
 {
@@ -25,7 +24,9 @@ namespace MassEffectModBuilder.DLC
 
         protected DlcBuilder DlcBuilder { get; }
 
-        protected ModBuilderContext ModContext;
+        public ModBuilderContext ModContext;
+
+        public string ModLibraryBase => ModContext.ModLibraryBase;
 
         public MEGame Game => ModContext.Game;
 
@@ -45,11 +46,40 @@ namespace MassEffectModBuilder.DLC
 
         public int ModBaseTlkId => DlcBuilder.InternalNameTlkId;
 
+        public string DefaultTfcPath => Path.Combine(CookedFolderPath, $"Textures_DLC_MOD_{ModDLCName}.tfc");
+
         public LE1AutoLoad? Le1AutoLoad { get; }
         public Game23MountFile? Game23Mount { get; }
 
+        public void WithStartupPackage(string packageName)
+        {
+            if (Game == MEGame.LE1)
+            {
+                Le1AutoLoad!.GlobalPackages.Add(packageName);
+            }
+            else if (Game.IsGame2())
+            {
+                Game23Configs!.GetOrCreateConfigFile("BIOEngine.ini").GetOrCreateClass("Engine.StartupPackages").AddArrayEntries("DLCStartupPackage", [packageName]);
+            }
+            else if (Game.IsGame3())
+            {
+                var configClass = Game23Configs!.GetOrCreateConfigFile("BioEngine.xml").GetOrCreateClass("Engine.StartupPackages");
+                configClass.AddArrayEntries("dlcstartuppackage", [packageName]);
+                configClass.AddEntry(new LegendaryExplorerCore.Coalesced.CoalesceProperty("dlcstartuppackagename", [new StringCoalesceValue(packageName, LegendaryExplorerCore.Coalesced.CoalesceParseAction.New).ToCoalesceValue()]));
+                configClass.AddArrayEntries("package", [packageName]);
+            }
+        }
+
+        //public void WithTfc(string? tfcName = null)
+        //{
+        //    tfcName ??= $"Textures_DLC_MOD_{ModDLCName}";
+        //    // ensure there is a new local tfc file
+        //    var tfcPath = Path.Combine(CookedFolderPath, $"{tfcName}.tfc");
+            
+        //}
+
         // package stuff
-        private CaseInsensitiveDictionary<PackageBuilder> _packages = [];
+        //private CaseInsensitiveDictionary<PackageBuilder> _packages = [];
 
         //public void AddPackage(PackageBuilder packagebuilder)
         //{
@@ -65,7 +95,7 @@ namespace MassEffectModBuilder.DLC
         //    return null;
         //}
 
-        public IEnumerable<PackageBuilder> Packages => _packages.Values;
+        //public IEnumerable<PackageBuilder> Packages => _packages.Values;
 
         // TLK stuff
         public TlkBuilder TlkBuilder { get; }
@@ -93,7 +123,5 @@ namespace MassEffectModBuilder.DLC
 
         // regular config stuff (game 2 and 3 only; OT1 tbd)
         public Game23Configs? Game23Configs { get; private set; }
-
-        // TODO let me add M3TOs to this DLC
     }
 }

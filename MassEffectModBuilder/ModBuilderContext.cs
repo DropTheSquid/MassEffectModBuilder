@@ -8,13 +8,15 @@ namespace MassEffectModBuilder
     //    public T CustomContext { get; set; } = new();
     //}
 
-    public class ModBuilderContext(ModBuilder builder, string modOutputBasePath)
+    public class ModBuilderContext(ModBuilder builder, string modOutputBasePath, string modLibraryBase)
     {
         protected readonly ModBuilder Builder = builder;
 
         public MEGame Game => Builder.Game;
 
         public ModDesc ModDesc => Builder.ModDesc;
+
+        public string ModLibraryBase => modLibraryBase;
 
         public string ModOutputBasePath => modOutputBasePath;
 

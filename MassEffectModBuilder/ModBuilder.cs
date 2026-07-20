@@ -2,6 +2,7 @@
 using LegendaryExplorerCore.Packages;
 using MassEffectModBuilder.DLC;
 using MassEffectModBuilder.Folder;
+using MassEffectModBuilder.M3Tasks;
 using MassEffectModBuilder.Merge;
 
 namespace MassEffectModBuilder
@@ -16,9 +17,12 @@ namespace MassEffectModBuilder
             DeveloperName = developerName;
             Version = version;
             Description = description;
+            ModFolderName = modName;
         }
 
         public string ModName { get; }
+
+        public string ModFolderName { get; set; }
 
         public string DeveloperName { get;}
 
@@ -57,6 +61,8 @@ namespace MassEffectModBuilder
 
         public ModDesc ModDesc { get; private set; }
 
+        protected readonly HashSet<string> MergeMods = [];
+
         /// <summary>
         /// Allows you to add one or more DLCs to this mod
         /// </summary>
@@ -70,8 +76,9 @@ namespace MassEffectModBuilder
         /// Allows you to add one or more m3m merge mods to this mod
         /// </summary>
         /// <param name="merge"></param>
-        public ModBuilder WithMergeMod(MergeBuilder merge, bool alwaysInstall = true)
+        public ModBuilder WithMergeMod(MergeBuilder merge, bool alwaysInstall = true, bool compile = true)
         {
+            MergeMods.Add(merge.M3mName);
             return AddTask(new MergeBuilderTask(merge, alwaysInstall));
         }
 
@@ -104,19 +111,28 @@ namespace MassEffectModBuilder
             return this;
         }
 
-        public virtual void Build(string modOutputBasePath)
+        public virtual void Build(string modLibraryBase, bool compileMergeMods = true)
         {
+            var modOutputBasePath = Path.Combine(modLibraryBase, Game.ToString(), ModFolderName);
             Console.WriteLine($"Starting mod build into {modOutputBasePath}");
             // init the library
             LegendaryExplorerCoreLib.InitLib(TaskScheduler.Current, x => Console.Error.WriteLine($"Failed to save package: {x}"));
 
-            var context = GetNewContext(modOutputBasePath);
+            var context = GetNewContext(modOutputBasePath, modLibraryBase);
 
             if (Directory.Exists(modOutputBasePath))
             {
                 Directory.Delete(modOutputBasePath, true);
             }
             Directory.CreateDirectory(modOutputBasePath);
+
+            if (compileMergeMods)
+            {
+                foreach (var mergeMod in MergeMods)
+                {
+                    AddTask(new CompileMergeMod(mergeMod));
+                }
+            }
 
             foreach (var task in ModBuilderTasks)
             {
@@ -126,9 +142,9 @@ namespace MassEffectModBuilder
             ModDesc.OutputModDesc(modOutputBasePath);
         }
 
-        protected virtual ModBuilderContext GetNewContext(string modOutputBasePath)
+        protected virtual ModBuilderContext GetNewContext(string modOutputBasePath, string modLibraryBase)
         {
-            return new ModBuilderContext(this, modOutputBasePath);
+            return new ModBuilderContext(this, modOutputBasePath, modLibraryBase);
         }
 
         public class DlcBuilderTask(DlcBuilder builder, bool alwaysInstall) : IModBuilderTask
@@ -153,7 +169,8 @@ namespace MassEffectModBuilder
                 }
                 // make sure the merge folder exists
                 Directory.CreateDirectory(context.MergeModsFolder);
-                builder.Build(context);
+                var mergeContext = new MergeBuilderContext(builder, context);
+                builder.Build(mergeContext);
             }
         }
 

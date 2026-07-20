@@ -1,13 +1,25 @@
 ﻿using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Textures;
 using LegendaryExplorerCore.Unreal;
-using System.Xml.Linq;
+using LegendaryExplorerCore.Unreal.Classes;
+using MassEffectModBuilder.Tfc;
 
 namespace MassEffectModBuilder.LEXHelpers
 {
     public static class PackageHelpers
     {
+        public static ExportEntry EnsurePackagePathExists(this IMEPackage pcc, IEnumerable<string> path, bool forcedExport = true)
+        {
+            ExportEntry export = null;
+            foreach (string name in path)
+            {
+                export = ExportCreator.CreatePackageExport(pcc, NameReference.FromInstancedString(name), export, forcedExport: forcedExport);
+            }
+            return export!;
+        }
+
         public static ExportEntry? GetObjectReferencer(this IMEPackage pcc)
         {
             if (pcc.Flags.HasFlag(UnrealFlags.EPackageFlags.Map))
@@ -137,6 +149,41 @@ namespace MassEffectModBuilder.LEXHelpers
             }
 
             return null;
+        }
+
+        public struct TextureInfo
+        {
+            public PixelFormat PixelFormat { get; set; }
+            public bool SRGB { get; set; }
+            public bool Mipped { get; set; }
+            public string? TextureGroup { get; set; }
+            public string? TfcPath { get; set; }
+        }
+
+        public static ExportEntry CreateTextureFromImageFile(this IMEPackage package, string textureIFP, string imageFilePath, TextureInfo textureInfo)
+        {
+            var image = Image.LoadFromFile(imageFilePath, PixelFormat.ARGB);
+            return package.CreateTextureFromImage(textureIFP, image, textureInfo);
+        }
+
+        public static ExportEntry CreateTextureFromImage(this IMEPackage package, string textureIFP, Image image, TextureInfo textureInfo)
+        {
+            if (textureInfo.TfcPath != null)
+            {
+                TfcHelpers.EnsureTfcExists(textureInfo.TfcPath);
+            }
+            var segments = textureIFP.Split('.');
+            var name = segments.Last();
+            var packagePath = segments.Take(segments.Length - 1).ToArray();
+
+            var parent = package.EnsurePackagePathExists(packagePath);
+
+            var texExport = Texture2D.CreateTexture(package, name, image.mipMaps[0].origWidth, image.mipMaps[0].origHeight, textureInfo.PixelFormat, textureInfo.Mipped, parent, textureInfo.TextureGroup);
+
+            var texture = new Texture2D(texExport);
+            texture.Replace(image, texExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), null, textureInfo.TfcPath == null, textureInfo.PixelFormat);
+
+            return texExport;
         }
     }
 }

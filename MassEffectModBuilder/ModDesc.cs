@@ -86,6 +86,10 @@ namespace MassEffectModBuilder
 
         public void AddMerge(string m3mName)
         {
+            if (!m3mName.EndsWith(".m3m", StringComparison.InvariantCultureIgnoreCase))
+            {
+                m3mName = m3mName + ".m3m";
+            }
             merges.Add(m3mName);
         }
 

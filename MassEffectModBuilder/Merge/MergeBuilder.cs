@@ -1,4 +1,8 @@
-﻿namespace MassEffectModBuilder.Merge
+﻿using MassEffectModBuilder.DLC;
+using MassEffectModBuilder.Package;
+using static MassEffectModBuilder.DLC.DlcBuilder;
+
+namespace MassEffectModBuilder.Merge
 {
     /// <summary>
     /// A builder for a single m3m file as part of a mod. 
@@ -167,9 +171,29 @@
             }
         }
 
-        public void Build(ModBuilderContext context)
+        protected List<MergePackageBuilder> Packages = [];
+        public MergeBuilder WithPackage(MergePackageBuilder package)
         {
-             File.WriteAllText(Path.Combine(context.MergeModsFolder, M3mName + ".json"), GenerateJson(context));
+            Packages.Add(package);
+            return this;
+        }
+
+        public MergeBuilder WithPackages(params MergePackageBuilder[] packages)
+        {
+            foreach (var package in packages)
+            {
+                Packages.Add(package);
+            }
+            return this;
+        }
+
+        public void Build(MergeBuilderContext context)
+        {
+            foreach (var package in Packages)
+            {
+                package.Build(context.ModBuilderContext, context);
+            }
+            File.WriteAllText(Path.Combine(context.MergeModsFolder, M3mName + ".json"), GenerateJson(context.ModBuilderContext));
         }
     }
 }

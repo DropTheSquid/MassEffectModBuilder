@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore.Packages;
 using MassEffectModBuilder.Package;
+using MassEffectModBuilder.TextureOverride;
 
 namespace MassEffectModBuilder.DLC
 {
@@ -34,9 +35,27 @@ namespace MassEffectModBuilder.DLC
 
         protected readonly List<IDlcTask> DlcBuilderTasks = [];
 
-        public DlcBuilder WithPackage(PackageBuilder package)
+        public DlcBuilder WithPackage(DlcPackageBuilder package)
         {
-            AddTask(new BuildPackageTask(package));
+            AddTask(context => package.Build(context.ModContext, context));
+            return this;
+        }
+
+        public DlcBuilder WithPackages(params DlcPackageBuilder[] packages)
+        {
+            foreach (var package in packages)
+            {
+                AddTask(context => package.Build(context.ModContext, context));
+            }
+            return this;
+        }
+
+        public DlcBuilder WithTextureOverride(TextureOverrideBuilder TOBuilder)
+        {
+            AddTask(context => {
+                TOBuilder.Build(context.CookedFolderPath, context.ModContext);
+
+            });
             return this;
         }
 
@@ -46,12 +65,23 @@ namespace MassEffectModBuilder.DLC
             return this;
         }
 
+        public virtual DlcBuilder AddTask(Action<DlcBuilderContext> task)
+        {
+            DlcBuilderTasks.Add(new CustomDlcTask(task));
+            return this;
+        }
+
         public virtual DlcBuilder AddTasks(params IDlcTask[] tasks)
         {
             foreach (var task in tasks)
             {
                 AddTask(task);
             }
+            return this;
+        }
+
+        public DlcBuilder RequiresTextureOverrideAsi()
+        {
             return this;
         }
 
@@ -180,14 +210,6 @@ namespace MassEffectModBuilder.DLC
                         File.WriteAllLines(Path.Combine(context.CookedFolderPath, configMerge.OutputFileName), lines);
                     }
                 }
-            }
-        }
-
-        public class BuildPackageTask(PackageBuilder packageBuilder) : IDlcTask
-        {
-            public void RunDlcTask(DlcBuilderContext context)
-            {
-                packageBuilder.Build();
             }
         }
     }

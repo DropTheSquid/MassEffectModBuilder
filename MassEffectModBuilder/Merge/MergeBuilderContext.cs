@@ -1,4 +1,6 @@
-﻿namespace MassEffectModBuilder.Merge
+﻿using LegendaryExplorerCore.Packages;
+
+namespace MassEffectModBuilder.Merge
 {
     public class MergeBuilderContext
     {
@@ -8,5 +10,9 @@
         }
         public ModBuilderContext ModBuilderContext { get; }
         public MergeBuilder Builder { get; }
+
+        public string MergeModsFolder => ModBuilderContext.MergeModsFolder;
+
+        public MEGame Game => ModBuilderContext.Game;
     }
 }
