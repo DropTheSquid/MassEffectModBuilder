@@ -78,6 +78,11 @@ namespace MassEffectModBuilder
         /// <param name="merge"></param>
         public ModBuilder WithMergeMod(MergeBuilder merge, bool alwaysInstall = true, bool compile = true)
         {
+            if (merge.IsEmpty())
+            {
+                Console.WriteLine($"WARN: You tried to add a merge mod with no changes: {merge.M3mName}");
+                return this;
+            }
             MergeMods.Add(merge.M3mName);
             return AddTask(new MergeBuilderTask(merge, alwaysInstall));
         }

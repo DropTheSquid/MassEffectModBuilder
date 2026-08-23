@@ -1,6 +1,5 @@
-﻿using MassEffectModBuilder.DLC;
+﻿using LegendaryExplorerCore.Helpers;
 using MassEffectModBuilder.Package;
-using static MassEffectModBuilder.DLC.DlcBuilder;
 
 namespace MassEffectModBuilder.Merge
 {
@@ -14,6 +13,10 @@ namespace MassEffectModBuilder.Merge
         // the files modified by this m3m
         private readonly List<MergeModFileRecord> Files = [];
 
+        public bool IsEmpty()
+        {
+            return Files.IsEmpty() || Files.All(x => x.IsEmpty());
+        }
         public void AddChange(string file, MergeModChange change)
         {
 
@@ -33,7 +36,7 @@ namespace MassEffectModBuilder.Merge
         @$"{{
     ""game"": ""{context.Game}"",
     ""files"": [
-{string.Join(",\r\n", Files.Select(x => x.GenerateFileJson()))}
+{string.Join(",\r\n", Files.Where(x => !x.IsEmpty()).Select(x => x.GenerateFileJson()))}
     ]
 }}";
         }
@@ -41,6 +44,11 @@ namespace MassEffectModBuilder.Merge
         private record class MergeModFileRecord(string TargetFile, bool ApplyToAllLocalizations = false)
         {
             private List<MergeModChange> ChangeList = [];
+
+            public bool IsEmpty()
+            {
+                return ChangeList.IsEmpty();
+            }
 
             public void AddChange(MergeModChange change)
             {
