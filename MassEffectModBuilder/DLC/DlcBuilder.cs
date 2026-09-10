@@ -50,11 +50,11 @@ namespace MassEffectModBuilder.DLC
             return this;
         }
 
-        public DlcBuilder WithTextureOverride(TextureOverrideBuilder TOBuilder)
+        public DlcBuilder WithTextureOverride(TextureOverrideBuilder TOBuilder, string? overrideTfcPath = null)
         {
             AddTask(context => {
+                TOBuilder.OverrideTfcPath ??= overrideTfcPath ?? context.DefaultTfcPath;
                 TOBuilder.Build(context.CookedFolderPath, context.ModContext);
-
             });
             return this;
         }

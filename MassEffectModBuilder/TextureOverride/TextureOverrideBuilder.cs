@@ -24,7 +24,7 @@ namespace MassEffectModBuilder.TextureOverride
         }
 
         public string TextureOverrideName { get; } = toName;
-        public string? TfcPath { get; set; }
+        public string? OverrideTfcPath { get; set; }
 
         protected Dictionary<string, TextureOverrideInfo> Textures = [];
 
@@ -83,13 +83,13 @@ namespace MassEffectModBuilder.TextureOverride
                 else if (textureOverrideInfo.TextureImage != null)
                 {
                     var textureInfo = textureOverrideInfo.TextureInfo;
-                    textureInfo.TfcPath ??= TfcPath;
+                    textureInfo.TfcPath ??= OverrideTfcPath;
                     TOPackage.CreateTextureFromImage(textureIfp, textureOverrideInfo.TextureImage, textureInfo);
                 }
                 else if (textureOverrideInfo.TextureFilePath != null)
                 {
                     var textureInfo = textureOverrideInfo.TextureInfo;
-                    textureInfo.TfcPath ??= TfcPath;
+                    textureInfo.TfcPath ??= OverrideTfcPath;
                     TOPackage.CreateTextureFromImageFile(textureIfp, textureOverrideInfo.TextureFilePath, textureInfo);
                 }
                 else
