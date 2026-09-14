@@ -74,6 +74,12 @@ namespace MassEffectModBuilder
             set => SetValue(ModInfoHeader, "modsite", value);
         }
 
+        public IEnumerable<string> RequiredDlc
+        {
+            get => GetValue(ModInfoHeader, "requireddlc")?.Value.Split(";") ?? [];
+            set => SetValue(ModInfoHeader, "requireddlc", string.Join(";", value));
+        }
+
         public void SetValue(string section, string key, string? value)
         {
             this[section].SetSingleEntry(key, value);

@@ -63,6 +63,12 @@ namespace MassEffectModBuilder
 
         protected readonly HashSet<string> MergeMods = [];
 
+        public ModBuilder WithRequiredDlc(string dlc)
+        {
+            ModDesc.RequiredDlc = ModDesc.RequiredDlc.Append(dlc);
+            return this;
+        }
+
         /// <summary>
         /// Allows you to add one or more DLCs to this mod
         /// </summary>
