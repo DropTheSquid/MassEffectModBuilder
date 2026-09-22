@@ -4,6 +4,9 @@ namespace MassEffectModBuilder.Package
 {
     public class DlcPackageBuilder : PackageBuilder<DlcBuilderContext>
     {
+        public DlcPackageBuilder(string packageName, string subfolder, string? source = null) : base(packageName, [subfolder], source)
+        {
+        }
         public DlcPackageBuilder(string packageName, string[]? subfolder = null, string? source = null) : base(packageName, subfolder, source)
         {
         }

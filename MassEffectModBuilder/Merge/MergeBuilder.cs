@@ -17,7 +17,7 @@ namespace MassEffectModBuilder.Merge
         {
             return Files.IsEmpty() || Files.All(x => x.IsEmpty());
         }
-        public void AddChange(string file, MergeModChange change)
+        public MergeBuilder AddChange(string file, MergeModChange change)
         {
 
             var fileEntry = Files.FirstOrDefault(x => x.TargetFile == file);
@@ -28,6 +28,7 @@ namespace MassEffectModBuilder.Merge
             }
 
             fileEntry.AddChange(change);
+            return this;
         }
 
         public string GenerateJson(ModBuilderContext context)

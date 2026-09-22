@@ -181,9 +181,15 @@ namespace MassEffectModBuilder.LEXHelpers
             var texExport = Texture2D.CreateTexture(package, name, image.mipMaps[0].origWidth, image.mipMaps[0].origHeight, textureInfo.PixelFormat, textureInfo.Mipped, parent, textureInfo.TextureGroup);
 
             var texture = new Texture2D(texExport);
-            texture.Replace(image, texExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), null, textureInfo.TfcPath == null, textureInfo.PixelFormat);
+            texture.Replace(image, texExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), textureInfo.TfcPath, textureInfo.TfcPath == null, textureInfo.PixelFormat);
 
             return texExport;
+        }
+
+        public static void ReplaceTextureFromFile(this IMEPackage package, ExportEntry textureExport, string imageFilePath, TextureInfo textureInfo)
+        {
+            var image = Image.LoadFromFile(imageFilePath, PixelFormat.ARGB);
+            package.ReplaceTextureFromImage(textureExport, image, textureInfo);
         }
 
         public static void ReplaceTextureFromFile(this IMEPackage package, string textureIFP, string imageFilePath, TextureInfo textureInfo)
@@ -192,19 +198,19 @@ namespace MassEffectModBuilder.LEXHelpers
             package.ReplaceTextureFromImage(textureIFP, image, textureInfo);
         }
 
-        public static void ReplaceTextureFromImage(this IMEPackage package, string textureIFP, Image image, TextureInfo textureInfo)
+        public static void ReplaceTextureFromImage(this IMEPackage package, ExportEntry textureExport, Image image, TextureInfo textureInfo)
         {
             if (textureInfo.TfcPath != null)
             {
                 TfcHelpers.EnsureTfcExists(textureInfo.TfcPath);
             }
-            var texExport = package.FindExport(textureIFP);
-            //var props = texExport.GetProperties();
-            //var tfcName = textureInfo.TfcPath == null ? null : Path.GetFileNameWithoutExtension(textureInfo.TfcPath);
-            var texture = new Texture2D(texExport);
-            //texture.Replace(image, props, forcedTFCName: tfcName, forcedTFCPath: textureInfo.TfcPath, isPackageStored: textureInfo.TfcPath == null, forcedNewFormat: textureInfo.PixelFormat);
-            texture.Replace(image, texExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), null, textureInfo.TfcPath == null, textureInfo.PixelFormat);
+            var texture = new Texture2D(textureExport);
+            texture.Replace(image, textureExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), textureInfo.TfcPath, textureInfo.TfcPath == null, textureInfo.PixelFormat);
+        }
 
+        public static void ReplaceTextureFromImage(this IMEPackage package, string textureIFP, Image image, TextureInfo textureInfo)
+        {
+            ReplaceTextureFromImage(package, package.FindExport(textureIFP), image, textureInfo);
         }
     }
 }
