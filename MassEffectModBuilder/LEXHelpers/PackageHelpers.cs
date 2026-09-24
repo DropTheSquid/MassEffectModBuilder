@@ -179,7 +179,10 @@ namespace MassEffectModBuilder.LEXHelpers
             var parent = package.EnsurePackagePathExists(packagePath);
 
             var texExport = Texture2D.CreateTexture(package, name, image.mipMaps[0].origWidth, image.mipMaps[0].origHeight, textureInfo.PixelFormat, textureInfo.Mipped, parent, textureInfo.TextureGroup);
-
+            if (!textureInfo.SRGB)
+            {
+                texExport.WriteProperty(new BoolProperty(false, "SRGB"));
+            }
             var texture = new Texture2D(texExport);
             texture.Replace(image, texExport.GetProperties(), null, Path.GetFileNameWithoutExtension(textureInfo.TfcPath), textureInfo.TfcPath, textureInfo.TfcPath == null, textureInfo.PixelFormat);
 

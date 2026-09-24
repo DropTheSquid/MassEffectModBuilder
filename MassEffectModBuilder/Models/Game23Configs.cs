@@ -57,30 +57,31 @@ namespace MassEffectModBuilder.Models
             configuration.Add(new CoalesceProperty("basedon", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Config\DefaultEngine.ini", CoalesceParseAction.Add)));
 
             var coreSystem = bioEngine.GetOrCreateClass("core.system");
-            coreSystem.Add(new CoalesceProperty("cookpaths", new CoalesceValue("null", CoalesceParseAction.RemoveProperty)));
-            coreSystem.Add(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Content", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Script", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\ScriptFinalRelease", CoalesceParseAction.Add)));
+            
+            coreSystem.AddEntry(new CoalesceProperty("cookpaths", new CoalesceValue("null", CoalesceParseAction.RemoveProperty)));
+            coreSystem.AddEntry(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Content", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Script", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("cookpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\ScriptFinalRelease", CoalesceParseAction.Add)));
 
-            coreSystem.Add(new CoalesceProperty("frscriptpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\ScriptFinalRelease", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("frscriptpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\ScriptFinalRelease", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("frscriptpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\ScriptFinalRelease", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("frscriptpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\ScriptFinalRelease", CoalesceParseAction.Add)));
 
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\__Trashcan", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\Content", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\TestContent", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\__Trashcan", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Content", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\TestContent", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\__Trashcan", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\Content", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\TestContent", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\__Trashcan", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Content", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("paths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\TestContent", CoalesceParseAction.Add)));
 
-            coreSystem.Add(new CoalesceProperty("scriptpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\Script", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("scriptpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Script", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("scriptpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\Script", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("scriptpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\Script", CoalesceParseAction.Add)));
 
-            coreSystem.Add(new CoalesceProperty("seekfreepcpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\CookedPCConsole", CoalesceParseAction.Add)));
-            coreSystem.Add(new CoalesceProperty("seekfreepcpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\CookedPCConsole", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("seekfreepcpaths", new CoalesceValue(@"..\..\BIOGame\DLC\DLC_Shared\CookedPCConsole", CoalesceParseAction.Add)));
+            coreSystem.AddEntry(new CoalesceProperty("seekfreepcpaths", new CoalesceValue($@"..\..\BIOGame\DLC\{dlcModFolderName}\CookedPCConsole", CoalesceParseAction.Add)));
 
             var unrealEdEditorEngine = bioEngine.GetOrCreateClass("unrealed.editorengine");
-            unrealEdEditorEngine.Add(new CoalesceProperty("editpackages", new CoalesceValue("SFXGameContentDLC_Shared", CoalesceParseAction.Add)));
-            unrealEdEditorEngine.Add(new CoalesceProperty("editpackages", new CoalesceValue($"SFXGameContent{dlcModFolderName}", CoalesceParseAction.Add)));
+            unrealEdEditorEngine.AddEntry(new CoalesceProperty("editpackages", new CoalesceValue("SFXGameContentDLC_Shared", CoalesceParseAction.Add)));
+            unrealEdEditorEngine.AddEntry(new CoalesceProperty("editpackages", new CoalesceValue($"SFXGameContent{dlcModFolderName}", CoalesceParseAction.Add)));
 
             GetOrCreateConfigFile("BioGame.xml");
 
