@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore.Helpers;
 using MassEffectModBuilder.Package;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MassEffectModBuilder.Merge
 {
@@ -13,11 +14,26 @@ namespace MassEffectModBuilder.Merge
         // the files modified by this m3m
         private readonly List<MergeModFileRecord> Files = [];
 
+        protected readonly List<IMergeTask> MergeBuilderTasks = [];
+
+        public MergeBuilder AddTask(IMergeTask task)
+        {
+            MergeBuilderTasks.Add(task);
+            return this;
+        }
+
+        public MergeBuilder AddTask(Action<MergeBuilderContext> task)
+        {
+            MergeBuilderTasks.Add(new CustomMergeTask(task));
+            return this;
+        }
+
         public bool IsEmpty()
         {
-            return Files.IsEmpty() || Files.All(x => x.IsEmpty());
+            return MergeBuilderTasks.IsEmpty();
         }
-        public MergeBuilder AddChange(string file, MergeModChange change)
+
+        private MergeBuilder AddChange(string file, MergeModChange change)
         {
 
             var fileEntry = Files.FirstOrDefault(x => x.TargetFile == file);
@@ -31,7 +47,72 @@ namespace MassEffectModBuilder.Merge
             return this;
         }
 
-        public string GenerateJson(ModBuilderContext context)
+        public MergeBuilder WithScriptUpdate(string targetFile, string entryName, string scriptFilePath)
+        {
+            if (!File.Exists(scriptFilePath))
+            {
+                throw new Exception($"script file {scriptFilePath} not found");
+            }
+            return AddTask(context =>
+            {
+                File.Copy(scriptFilePath, Path.Combine(context.ModBuilderContext.MergeModsFolder, Path.GetFileName(scriptFilePath)));
+                AddChange(targetFile, new ScriptUpdate(entryName, Path.GetFileName(scriptFilePath)));
+            });
+        }
+
+        public MergeBuilder WithAddToClassOrReplace(string targetFile, string entryName, params string[] scriptFilePaths)
+        {
+            foreach (var scriptFilePath in scriptFilePaths)
+            {
+                if (!File.Exists(scriptFilePath))
+                {
+                    throw new Exception($"script file {scriptFilePath} not found");
+                }
+            }
+            return AddTask(context =>
+            {
+                foreach (var scriptFilePath in scriptFilePaths)
+                {
+                    File.Copy(scriptFilePath, Path.Combine(context.ModBuilderContext.MergeModsFolder, Path.GetFileName(scriptFilePath)));
+                }
+                AddChange(targetFile, new AddToClassOrReplace(entryName, scriptFilePaths.Select(x => Path.GetFileName(x))));
+            });
+        }
+
+        public MergeBuilder WithClassUpdate(string targetFile, string scriptFilePath)
+        {
+            if (!File.Exists(scriptFilePath))
+            {
+                throw new Exception($"script file {scriptFilePath} not found");
+            }
+            return AddTask(context =>
+            {
+                File.Copy(scriptFilePath, Path.Combine(context.ModBuilderContext.MergeModsFolder, Path.GetFileName(scriptFilePath)));
+                AddChange(targetFile, new ClassUpdate(Path.GetFileName(scriptFilePath)));
+            });
+        }
+
+        public MergeBuilder WithPropertyUpdate(string targetFile, string entryName, params PropertyUpdateEntry[] updateEntries)
+        {
+            return AddTask(context =>
+            {
+                AddChange(targetFile, new PropertyUpdates(entryName, updateEntries));
+            });
+        }
+
+        public MergeBuilder WithAssetUpdate(string targetFile, MergePackageBuilder package, params AssetUpdateEntry[] assetUpdates)
+        {
+            return AddTask(context =>
+            {
+                package.Build(context.ModBuilderContext, context);
+                foreach (var entry in assetUpdates)
+                {
+                    AddChange(targetFile, new AssetUpdate(entry.VanillaEntryName, entry.NewEntryName, package.PackageName, entry.CanMergeAsNew));
+                }
+            });
+        }
+
+        protected string GenerateJson(ModBuilderContext context)
         {
             return
         @$"{{
@@ -68,12 +149,14 @@ namespace MassEffectModBuilder.Merge
             }
         }
 
-        public abstract record class MergeModChange(string EntryName)
+        private abstract record class MergeModChange(string EntryName)
         {
             public abstract string GenerateChangeJson();
         }
 
-        public record class AssetUpdate(
+        public record class AssetUpdateEntry(string VanillaEntryName, string NewEntryName, bool CanMergeAsNew = false);
+
+        private record class AssetUpdate(
             string VanillaEntryName,
             string NewEntryName,
             string AssetFileName,
@@ -93,7 +176,7 @@ namespace MassEffectModBuilder.Merge
             }
         }
 
-        public record class ScriptUpdate(string EntryName, string ScriptFileName) : MergeModChange(EntryName)
+        private record class ScriptUpdate(string EntryName, string ScriptFileName) : MergeModChange(EntryName)
         {
             public override string GenerateChangeJson()
             {
@@ -107,7 +190,7 @@ namespace MassEffectModBuilder.Merge
             }
         }
 
-        public record class AddToClassOrReplace(string EntryName, params string[] ScriptFilenames) : MergeModChange(EntryName)
+        private record class AddToClassOrReplace(string EntryName, IEnumerable<string> ScriptFilenames) : MergeModChange(EntryName)
         {
             public override string GenerateChangeJson()
             {
@@ -123,7 +206,7 @@ namespace MassEffectModBuilder.Merge
             }
         }
 
-        public record class PropertyUpdates(string EntryName, params PropertyUpdateEntry[] Updates) : MergeModChange(EntryName)
+        private record class PropertyUpdates(string EntryName, params PropertyUpdateEntry[] Updates) : MergeModChange(EntryName)
         {
 
             public override string GenerateChangeJson()
@@ -141,7 +224,7 @@ namespace MassEffectModBuilder.Merge
         }
 
         // MM9+ only
-        public record class ClassUpdate(string ClassName) : MergeModChange(ClassName)
+        private record class ClassUpdate(string ClassName) : MergeModChange(ClassName)
         {
             public override string GenerateChangeJson()
             {
@@ -180,27 +263,11 @@ namespace MassEffectModBuilder.Merge
             }
         }
 
-        protected List<MergePackageBuilder> Packages = [];
-        public MergeBuilder WithPackage(MergePackageBuilder package)
-        {
-            Packages.Add(package);
-            return this;
-        }
-
-        public MergeBuilder WithPackages(params MergePackageBuilder[] packages)
-        {
-            foreach (var package in packages)
-            {
-                Packages.Add(package);
-            }
-            return this;
-        }
-
         public void Build(MergeBuilderContext context)
         {
-            foreach (var package in Packages)
+            foreach (var task in MergeBuilderTasks)
             {
-                package.Build(context.ModBuilderContext, context);
+                task.RunMergeTask(context);
             }
             File.WriteAllText(Path.Combine(context.MergeModsFolder, M3mName + ".json"), GenerateJson(context.ModBuilderContext));
         }
